@@ -1,6 +1,6 @@
 
 import pygame
-from settings import *
+from settings import PLAYER_ANIMATION, PLAYER_SIZE, BULLET_SIZE, BULLET_SPEED, SCREEN_THRUST, bullet_image
 
 
 bullet_group = pygame.sprite.Group()
@@ -10,53 +10,18 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         self.frame_index = 0
-        self.current_action = "idle"
+        self.current_action = "Jump"
         self.animations = {}
         self.animation_cooldown = 100
         self.direction = 1  # 1: Right, -1: Left
         self.last_update_time = pygame.time.get_ticks()
         self.InAir = True
         self.vel_y = 0
-        self.speed = 3
+        self.speed = 2
         self.running_speed = 7
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False
-
-        # Define animations with frame counts, offsets, and sprite sheet paths
-        self.animation_data = {
-            "idle": {
-                "frame_count": 6,  # Number of frames
-                "image_path": "assets/player/Idle.png",  # Sprite sheet path,
-                "animataion_cooldown": 100
-            },
-            "Run": {
-                "frame_count": 10,  # Number of frames
-                "image_path": "assets/player/Run.png",  # Sprite sheet path
-                "animataion_cooldown": 100
-            },
-            "Shot": {
-                "frame_count": 4,  # Number of frames
-                "image_path": "assets/player/Shot.png",  # Sprite sheet path
-                "animataion_cooldown": 50
-            },
-            "Walk": {
-                "frame_count": 10,  # Number of frames
-                "image_path": "assets/player/Walk.png",  # Sprite sheet path
-                "animataion_cooldown": 100
-            },
-            "Jump": {
-                "frame_count": 10,  # Number of frames
-                "image_path": "assets/player/Jump.png",  # Sprite sheet path
-                "animataion_cooldown": 100
-            },
-            
-            "Reload": {
-                "frame_count": 17,  # Number of frames
-                "image_path": "assets/player/Recharge.png",  # Sprite sheet path
-                "animataion_cooldown": 70
-            },
-        }
 
         # Load animations
         self.load_animations()
@@ -68,14 +33,14 @@ class Player(pygame.sprite.Sprite):
 
     def load_animations(self):
         """Load animations from the defined data."""
-        for action, data in self.animation_data.items():
+        for action, data in PLAYER_ANIMATION.items():
             frames = []
             sprite_sheet = pygame.image.load(data["image_path"]).convert_alpha()
 
             # Define adjustments for cutting padding
             cut_top = 50  # Pixels to remove from the top
-            cut_left = 35  # Pixels to remove from the left
-            cut_right = 35  # Pixels to remove from the right
+            cut_left = 33 # Pixels to remove from the left
+            cut_right = 33  # Pixels to remove from the right
             frame_height = 128 - cut_top  # Adjusted height
             frame_width = 128 - (cut_left + cut_right)  # Adjusted width
 
@@ -100,13 +65,13 @@ class Player(pygame.sprite.Sprite):
         new_action = None
 
         # Handle Jumping
-        if keys[pygame.K_w] and not self.InAir and not self.isReloading:
+        if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting:
             self.InAir = True
             self.vel_y = -11  # Jump velocity
             new_action = "Jump"
 
         # Allow horizontal movement even while in the air
-        if keys[pygame.K_a] or keys[pygame.K_d] and not self.isReloading:
+        if keys[pygame.K_a] or keys[pygame.K_d] and (not self.isReloading and not self.isShooting):
             if keys[pygame.K_a]:
                 dx = -self.speed  # Move left
                 self.direction = -1
@@ -115,7 +80,7 @@ class Player(pygame.sprite.Sprite):
                 self.direction = 1
 
             # Set "Walk" or "Run" animations only if on the ground
-            if not self.InAir and not self.isReloading:
+            if not self.InAir and not self.isReloading and not self.isShooting:
                 if keys[pygame.K_LSHIFT]:
                     dx *= 2  # Running speed
                     new_action = "Run"
@@ -123,13 +88,18 @@ class Player(pygame.sprite.Sprite):
                     new_action = "Walk"
 
         # Handle Shooting
-        if keys[pygame.K_SPACE] and not self.isReloading:
+        elif keys[pygame.K_SPACE] and not self.isReloading and not self.isShooting:
             new_action = "Shot"
             self.shoot()
+        
+        # Check dummy hurt animation
+        elif keys[pygame.K_h]:
+            new_action = "Hurt"
 
         # Idle animation if no other actions are active
-        if not self.InAir and not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_SPACE] ) and not self.isReloading:
-            new_action = "idle"
+        elif not self.InAir and not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_SPACE] ) and not self.isReloading:
+            if not self.current_action == "Hurt":
+                new_action = "idle"
 
         # Update animation if needed
         if new_action :
@@ -202,16 +172,18 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_update_time > self.animation_data[self.current_action]["animataion_cooldown"]:
+        if current_time - self.last_update_time > PLAYER_ANIMATION[self.current_action]["animation_cooldown"]:
             self.last_update_time = current_time
             self.frame_index += 1
 
             # Reset Jump animation when it ends
             if self.current_action == "Jump" and self.frame_index >= len(self.animations[self.current_action]):
                 self.InAir = True
-                self.update_animation("idle")
             elif self.current_action == "Reload" and self.frame_index >= len(self.animations[self.current_action]):
                 self.isReloading = False
+            elif self.current_action == "Shot" and self.frame_index >= len(self.animations[self.current_action]):
+                self.isShooting = False
+            elif self.current_action == "Hurt" and self.frame_index >= len(self.animations[self.current_action]):
                 self.update_animation("idle")
 
             # Loop animation
@@ -240,6 +212,9 @@ class Player(pygame.sprite.Sprite):
             self.current_action = new_action
             self.frame_index = 0
             self.last_update_time = pygame.time.get_ticks()
+            if new_action == "idle":
+                self.isShooting = False
+
 
     def draw(self, screen):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)

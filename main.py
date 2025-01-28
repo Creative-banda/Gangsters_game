@@ -2,7 +2,7 @@ import pygame
 import sys
 import json
 from player import Player, bullet_group
-from settings import screen
+from settings import screen, ground_group
 
 # Initialize Pygame
 pygame.init()
@@ -10,9 +10,6 @@ pygame.init()
 
 pygame.display.set_caption("Gangster Game")
 clock = pygame.time.Clock()
-
-# All Sprite
-ground_group = pygame.sprite.Group()
 
 
 # GAME VARIABLES
