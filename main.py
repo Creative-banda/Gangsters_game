@@ -25,6 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.vel_y = -11
         self.speed = 3
         self.running_speed = 7
+        self.isReloading = False
 
         # Define animations with frame counts, offsets, and sprite sheet paths
         self.animation_data = {
@@ -47,6 +48,11 @@ class Player(pygame.sprite.Sprite):
             "Jump": {
                 "frame_count": 10,  # Number of frames
                 "image_path": "assets/player/Jump.png",  # Sprite sheet path
+            },
+            
+            "Reload": {
+                "frame_count": 17,  # Number of frames
+                "image_path": "assets/player/Recharge.png",  # Sprite sheet path
             },
         }
 
@@ -76,7 +82,6 @@ class Player(pygame.sprite.Sprite):
 
             self.animations[action] = frames
             
-
     def move(self):
         dx = 0
         dy = 0
@@ -91,7 +96,7 @@ class Player(pygame.sprite.Sprite):
             self.vel_y = -11
             new_action = "Jump"
         # Only check other actions if not jumping and grounded
-        elif not self.InAir:
+        elif not self.InAir and not self.isReloading:
             if keys[pygame.K_SPACE]:
                 new_action = "Shot"
             elif keys[pygame.K_LSHIFT] and (keys[pygame.K_a] or keys[pygame.K_d]):
@@ -116,7 +121,8 @@ class Player(pygame.sprite.Sprite):
 
                 
             else:
-                new_action = "idle"
+                if not self.isReloading:
+                    new_action = "idle"
 
         # Update animation if needed
         if new_action and new_action != self.current_action:
@@ -151,7 +157,6 @@ class Player(pygame.sprite.Sprite):
         if self.rect.left < 0:
             self.rect.left = 0
 
-
     def update(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_update_time > self.animation_cooldown:
@@ -162,6 +167,10 @@ class Player(pygame.sprite.Sprite):
             if self.current_action == "Jump" and self.frame_index >= len(self.animations[self.current_action]):
                 self.InAir = True
                 self.update_animation("idle")
+            elif self.current_action == "Reload" and self.frame_index >= len(self.animations[self.current_action]):
+                self.isReloading = False
+                self.update_animation("idle")
+                self.animation_cooldown = 100
 
             # Loop animation
             if self.frame_index >= len(self.animations[self.current_action]):
@@ -170,14 +179,16 @@ class Player(pygame.sprite.Sprite):
         self.image = self.animations[self.current_action][self.frame_index]
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
 
-
+    def reload(self):
+        self.animation_cooldown = 50
+        self.isReloading = True
+        self.update_animation("Reload")
 
     def update_animation(self, new_action):
         if new_action != self.current_action:
             self.current_action = new_action
             self.frame_index = 0
             self.last_update_time = pygame.time.get_ticks()
-
 
     def draw(self):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
@@ -193,6 +204,12 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+                if event.key == pygame.K_r:
+                    player.reload()
 
         # Clear the screen with the background color
         screen.fill((255, 155, 155))
