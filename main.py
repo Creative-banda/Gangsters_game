@@ -2,30 +2,30 @@ import pygame
 import sys
 import json
 from player import Player, bullet_group
-from settings import screen, ground_group, enemy_group, background_image
+from settings import screen, ground_group, enemy_group, background_image, CELL_SIZE
 
 # Initialize Pygame
 pygame.init()
 
-
 pygame.display.set_caption("Gangster Game")
 clock = pygame.time.Clock()
-
 
 # GAME VARIABLES
 bg_scroll_x = 0
 bg_scroll_y = 0
 
 def create_map():
-    global height, width, CELL_SIZE
+    global CELL_SIZE, background_image
     # Load the level 1 as json file 
     with open("assets/level_1.json") as file:
         maze_layout = json.load(file)
     
     height = len(maze_layout)
     width = len(maze_layout[0])
-    CELL_SIZE = 80
+
+    background_image = pygame.transform.scale(background_image, (width * CELL_SIZE, height * CELL_SIZE))
     
+
     # First create all ground tiles without any offset
     for y, row in enumerate(maze_layout):
         for x, cell in enumerate(row):
@@ -41,20 +41,22 @@ def create_map():
             elif cell == 8:  # Player
                 player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
 
-
-            
 class Ground(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         super().__init__()
         self.image = pygame.image.load(f"assets/map/{image}.png")
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        self.x = x
+        self.y = y
+        self.rect.center = (self.x, self.y)
     
-    def update(self, bg_scroll_x, bg_scroll_y):
-        self.rect.x -= bg_scroll_x
-        self.rect.y -= bg_scroll_y
-
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+    
+    def draw(self):
+        screen.blit(self.image, self.rect)
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -63,17 +65,16 @@ class Enemy(pygame.sprite.Sprite):
         self.image.fill((255, 0, 0))
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        self.x = x
+        self.y = y
+        self.rect.center = (self.x, self.y)
     
     def update(self):
-        self.rect.x -= bg_scroll_x
-        self.rect.y -= bg_scroll_y
-
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
 
 player = Player()
-initial_camera_offset = create_map()
-
-
+create_map()
 
 def main():
     global bg_scroll_x, bg_scroll_y
@@ -95,8 +96,9 @@ def main():
         screen.blit(background_image, (0, 0))
         
         # Update and draw the player
-        bg_scroll_x, bg_scroll_y = player.move(ground_group)
-        
+        x, y = player.move(ground_group)
+        bg_scroll_x += x
+        bg_scroll_y += y        
         player.update()
         player.draw(screen)
 
@@ -106,21 +108,17 @@ def main():
 
         # Update and draw the ground
         for ground in ground_group:
-            ground.update(bg_scroll_x, bg_scroll_y)
-        ground_group.draw(screen)
-        
+            ground.update()
+            ground.draw()
+
         # Update and draw the enemy
         for enemy in enemy_group:
             enemy.update()
-        
-        enemy_group.draw(screen)
-
-
+            screen.blit(enemy.image, enemy.rect)
 
         # Update the display
         pygame.display.flip()
         clock.tick(60)
-
 
 if __name__ == "__main__":
     main()

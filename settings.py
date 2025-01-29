@@ -15,9 +15,10 @@ enemy_group = pygame.sprite.Group()
 
 BULLET_SIZE = (10, 5)
 BULLET_SPEED = 20
-PLAYER_SIZE = (80, 100)  # Target size for each frame
+PLAYER_SIZE = (60, 80)  # Target size for each frame
 SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
+CELL_SIZE = 70
 
 
 

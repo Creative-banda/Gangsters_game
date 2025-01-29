@@ -134,7 +134,6 @@ class Player(pygame.sprite.Sprite):
         player_rect_vertical.y = new_y
 
         # Check vertical collisions
-        self.InAir = True  # Assume in air until collision is detected
         for ground in ground_group:
             if player_rect_vertical.colliderect(ground.rect):
                 if dy > 0:  # Falling down
@@ -143,7 +142,7 @@ class Player(pygame.sprite.Sprite):
                     self.InAir = False
                 elif dy < 0:  # Moving up
                     self.vel_y = 0
-                    dy = ground.rect.bottom - self.rect.top
+                    dy = 0
                 break
 
         self.rect.y += dy
@@ -157,13 +156,12 @@ class Player(pygame.sprite.Sprite):
             self.rect.x -= dx
 
         # Vertical scrolling (only when in air)
-        if self.rect.bottom > self.target_y:
+        if self.rect.bottom > self.target_y and self.vel_y > 0:
             screen_dy = self.rect.bottom - self.target_y
             self.rect.bottom = self.target_y
         elif self.vel_y < 0 and self.rect.bottom < self.target_y:
             screen_dy = dy
             self.rect.y -= dy
-        print(screen_dy, screen_dx)
 
         return screen_dx, screen_dy
 
@@ -216,8 +214,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
         screen.blit(self.image, self.rect)
         # Create self.target_y line
-        pygame.draw.line(screen, (255, 0, 0), (0, self.target_y), (800, self.target_y), 2)
-
+        # pygame.draw.line(screen, (255, 0, 0), (0, self.target_y), (800, self.target_y), 2)
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
