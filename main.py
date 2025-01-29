@@ -2,7 +2,7 @@ import pygame
 import sys
 import json
 from player import Player, bullet_group
-from settings import screen, ground_group
+from settings import screen, ground_group, SCREEN_WIDTH, SCREEN_HEIGHT, background_image
 
 # Initialize Pygame
 pygame.init()
@@ -11,6 +11,8 @@ pygame.init()
 pygame.display.set_caption("Gangster Game")
 clock = pygame.time.Clock()
 
+WIDTH = 50
+HEIGHT = 30
 
 # GAME VARIABLES
 bg_scroll_x = 0
@@ -24,7 +26,7 @@ def create_map():
     
     height = len(maze_layout)
     width = len(maze_layout[0])
-    CELL_SIZE = 40
+    CELL_SIZE = (SCREEN_HEIGHT // height) 
 
     
     for y, row in enumerate(maze_layout):
@@ -33,21 +35,22 @@ def create_map():
             world_x = x * CELL_SIZE
             world_y = y * CELL_SIZE
             
-            if cell == 1:  # Ground
-                ground = Ground(world_x, world_y)
+            
+            if cell > 0 and cell < 7:  # Ground
+                ground = Ground(world_x, world_y, cell)
                 ground_group.add(ground)
 
-            if cell == 2:
+            if cell == 8:
                 player.rect.midbottom = (world_x, world_y)
                 player.rect.y -= 30
             
 class Ground(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, image):
         super().__init__()
-        self.image = pygame.Surface((CELL_SIZE, CELL_SIZE))
-        self.image.fill((0, 0, 0))
+        self.image = pygame.image.load(f"assets/map/{image}.png")
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        self.rect.bottomleft = (x, y)
     
     def update(self):
         self.rect.x -= bg_scroll_x
@@ -60,7 +63,7 @@ create_map()
 
 
 def main():
-    global bg_scroll_x
+    global bg_scroll_x, bg_scroll_y
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -74,10 +77,12 @@ def main():
                     player.reload()
                     
 
-        # Clear the screen with the background color
-        screen.fill((255, 155, 155))
+        # Draw the background
+        screen.fill((0, 0, 0))
+        screen.blit(background_image, (0, 0))
+        
         # Update and draw the player
-        bg_scroll_x = player.move(ground_group)
+        bg_scroll_x, bg_scroll_y = player.move(ground_group)
         player.update()
         player.draw(screen)
 

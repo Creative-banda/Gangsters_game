@@ -12,10 +12,10 @@ ground_group = pygame.sprite.Group()
 
 # Constants
 
-BULLET_SIZE = (20, 10)
+BULLET_SIZE = (10, 5)
 BULLET_SPEED = 20
-PLAYER_SIZE = (80, 90)  # Target size for each frame
-SCREEN_THRUST_X = SCREEN_WIDTH // 2
+PLAYER_SIZE = (50, 60)  # Target size for each frame
+SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 
 
@@ -23,6 +23,7 @@ SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 # images
 
 bullet_image = pygame.image.load("assets/bullet.png").convert_alpha()
+background_image = pygame.image.load("assets/background.jpg").convert_alpha()
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns
 PLAYER_ANIMATION = {

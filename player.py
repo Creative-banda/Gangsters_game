@@ -59,6 +59,9 @@ class Player(pygame.sprite.Sprite):
     def move(self, ground_group):
         dx = 0
         dy = 0
+        screen_dx = 0
+        screen_dy = 0
+        
         keys = pygame.key.get_pressed()
 
         # Reset action to determine new animation
@@ -71,7 +74,7 @@ class Player(pygame.sprite.Sprite):
             new_action = "Jump"
 
         # Allow horizontal movement even while in the air
-        if keys[pygame.K_a] or keys[pygame.K_d] and (not self.isReloading and not self.isShooting):
+        if (keys[pygame.K_a] or keys[pygame.K_d]) and (not self.isReloading and not self.isShooting):
             if keys[pygame.K_a]:
                 dx = -self.speed  # Move left
                 self.direction = -1
@@ -105,8 +108,7 @@ class Player(pygame.sprite.Sprite):
         if new_action :
             self.update_animation(new_action)
 
-        # Apply gravity
-     
+       # Apply gravity
         self.vel_y += 0.5  # Simulate gravity
         dy += self.vel_y
 
@@ -115,10 +117,9 @@ class Player(pygame.sprite.Sprite):
         new_y = self.rect.y + dy
 
         # Create a temporary rect for collision detection
-        player_rect = pygame.Rect(new_x + dx, new_y + dy, self.rect.width, self.rect.height)
+        player_rect = pygame.Rect(new_x, new_y, self.rect.width, self.rect.height)
 
         # Check for collisions with ground group
-
         for ground in ground_group:
             if player_rect.colliderect(ground.rect):
                 # Calculate the overlap on each side
@@ -146,28 +147,35 @@ class Player(pygame.sprite.Sprite):
                     # Collision from the right
                     dx = ground.rect.right - self.rect.left
 
+        # Update the player's position
+        self.rect.x += dx
+        self.rect.y += dy
 
-       
+        # Screen scrolling logic
+        if self.rect.right > SCREEN_THRUST_X:
+            screen_dx = dx
+            self.rect.x -= dx
+        elif self.rect.left < SCREEN_THRUST_X and self.direction == -1:
+            screen_dx = dx
+            self.rect.x -= dx
+
+        # Vertical scrolling logic
+        if self.vel_y < 0:  # Moving upward
+            if self.rect.top < SCREEN_THRUST_Y:
+                screen_dy = dy
+                self.rect.y -= dy
+        elif self.vel_y > 0:  # Moving downward
+            if self.rect.bottom > SCREEN_THRUST_Y + 200:  # Add some buffer for downward movement
+                screen_dy = dy
+                self.rect.y -= dy
 
         # Restrict player within horizontal boundaries
         if self.rect.right > 800:
             self.rect.right = 800
         if self.rect.left < 0:
             self.rect.left = 0
-        # Update the player's position
-        self.rect.x += dx
-        self.rect.y += dy
-        # check for if player pass the screen threshhold and move the screen
-        if self.rect.right > SCREEN_THRUST_X:
-            self.rect.x -= dx
-            # return the added value from this method
-            return dx
-        elif self.rect.left < SCREEN_THRUST_X and self.direction == -1 :
-            self.rect.x -= dx
-            # return the added value from this method
-            return dx
-        return 0
 
+        return screen_dx, screen_dy
 
 
     def update(self):
