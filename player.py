@@ -1,4 +1,3 @@
-
 import pygame
 from settings import PLAYER_ANIMATION, PLAYER_SIZE, BULLET_SIZE, BULLET_SPEED, SCREEN_THRUST_X, SCREEN_THRUST_Y, bullet_image
 
@@ -29,8 +28,11 @@ class Player(pygame.sprite.Sprite):
         # Set initial frame and position
         self.image = self.animations[self.current_action][self.frame_index]
         self.rect = self.image.get_rect()
-        self.rect.midbottom = (200, 300)  # Changed from center to midbottom
+        self.rect.midbottom = (0, 600)  # Changed from center to midbottom
+        self.screen_height = 600  # Add your actual screen height
+        self.target_y = self.screen_height - 70   # Position player near bottom
 
+        
     def load_animations(self):
         """Load animations from the defined data."""
         for action, data in PLAYER_ANIMATION.items():
@@ -61,31 +63,28 @@ class Player(pygame.sprite.Sprite):
         dy = 0
         screen_dx = 0
         screen_dy = 0
-        
         keys = pygame.key.get_pressed()
-
-        # Reset action to determine new animation
         new_action = None
 
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting:
             self.InAir = True
-            self.vel_y = -11  # Jump velocity
+            self.speed = 4
+            self.vel_y = -11
             new_action = "Jump"
 
         # Allow horizontal movement even while in the air
         if (keys[pygame.K_a] or keys[pygame.K_d]) and (not self.isReloading and not self.isShooting):
             if keys[pygame.K_a]:
-                dx = -self.speed  # Move left
+                dx = -self.speed
                 self.direction = -1
             elif keys[pygame.K_d]:
-                dx = self.speed  # Move right
+                dx = self.speed
                 self.direction = 1
 
-            # Set "Walk" or "Run" animations only if on the ground
             if not self.InAir and not self.isReloading and not self.isShooting:
                 if keys[pygame.K_LSHIFT]:
-                    dx *= 2  # Running speed
+                    dx *= 2
                     new_action = "Run"
                 else:
                     new_action = "Walk"
@@ -100,58 +99,56 @@ class Player(pygame.sprite.Sprite):
             new_action = "Hurt"
 
         # Idle animation if no other actions are active
-        elif not self.InAir and not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_SPACE] ) and not self.isReloading:
+        elif not self.InAir and not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_SPACE]) and not self.isReloading:
             if not self.current_action == "Hurt":
                 new_action = "idle"
 
         # Update animation if needed
-        if new_action :
+        if new_action:
             self.update_animation(new_action)
 
-       # Apply gravity
-        self.vel_y += 0.5  # Simulate gravity
-        dy += self.vel_y
+        # Apply gravity
+        self.vel_y += 0.5
+        dy = self.vel_y
 
-        # Calculate new position
+        # Handle horizontal movement and collisions
         new_x = self.rect.x + dx
-        new_y = self.rect.y + dy
+        player_rect_horizontal = self.rect.copy()
+        player_rect_horizontal.x = new_x
 
-        # Create a temporary rect for collision detection
-        player_rect = pygame.Rect(new_x, new_y, self.rect.width, self.rect.height)
-
-        # Check for collisions with ground group
+        # Check horizontal collisions
+        horizontal_collision = False
         for ground in ground_group:
-            if player_rect.colliderect(ground.rect):
-                # Calculate the overlap on each side
-                overlap_left = player_rect.right - ground.rect.left
-                overlap_right = ground.rect.right - player_rect.left
-                overlap_top = player_rect.bottom - ground.rect.top
-                overlap_bottom = ground.rect.bottom - player_rect.top
+            if player_rect_horizontal.colliderect(ground.rect):
+                if dx > 0:
+                    dx = ground.rect.left - self.rect.right
+                elif dx < 0:
+                    dx = ground.rect.right - self.rect.left
+                break
 
-                # Find the smallest overlap to determine the side of collision
-                min_overlap = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
+        self.rect.x += dx
 
-                if min_overlap == overlap_top:
-                    # Collision from the top (landing)
+        # Handle vertical movement and collisions
+        new_y = self.rect.y + dy
+        player_rect_vertical = self.rect.copy()
+        player_rect_vertical.y = new_y
+
+        # Check vertical collisions
+        self.InAir = True  # Assume in air until collision is detected
+        for ground in ground_group:
+            if player_rect_vertical.colliderect(ground.rect):
+                if dy > 0:  # Falling down
                     self.vel_y = 0
-                    self.InAir = False
                     dy = ground.rect.top - self.rect.bottom
-                elif min_overlap == overlap_bottom:
-                    # Collision from the bottom (hit the ceiling)
+                    self.InAir = False
+                elif dy < 0:  # Moving up
                     self.vel_y = 0
                     dy = ground.rect.bottom - self.rect.top
-                elif min_overlap == overlap_left:
-                    # Collision from the left
-                    dx = ground.rect.left - self.rect.right
-                elif min_overlap == overlap_right:
-                    # Collision from the right
-                    dx = ground.rect.right - self.rect.left
+                break
 
-        # Update the player's position
-        self.rect.x += dx
         self.rect.y += dy
 
-        # Screen scrolling logic
+        # Horizontal scrolling
         if self.rect.right > SCREEN_THRUST_X:
             screen_dx = dx
             self.rect.x -= dx
@@ -159,24 +156,16 @@ class Player(pygame.sprite.Sprite):
             screen_dx = dx
             self.rect.x -= dx
 
-        # Vertical scrolling logic
-        if self.vel_y < 0:  # Moving upward
-            if self.rect.top < SCREEN_THRUST_Y:
-                screen_dy = dy
-                self.rect.y -= dy
-        elif self.vel_y > 0:  # Moving downward
-            if self.rect.bottom > SCREEN_THRUST_Y + 200:  # Add some buffer for downward movement
-                screen_dy = dy
-                self.rect.y -= dy
-
-        # Restrict player within horizontal boundaries
-        if self.rect.right > 800:
-            self.rect.right = 800
-        if self.rect.left < 0:
-            self.rect.left = 0
+        # Vertical scrolling (only when in air)
+        if self.rect.bottom > self.target_y:
+            screen_dy = self.rect.bottom - self.target_y
+            self.rect.bottom = self.target_y
+        elif self.vel_y < 0 and self.rect.bottom < self.target_y:
+            screen_dy = dy
+            self.rect.y -= dy
+        print(screen_dy, screen_dx)
 
         return screen_dx, screen_dy
-
 
     def update(self):
         current_time = pygame.time.get_ticks()
@@ -223,14 +212,11 @@ class Player(pygame.sprite.Sprite):
             if new_action == "idle":
                 self.isShooting = False
 
-
     def draw(self, screen):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
-
-        # For testing draw a rectangle with different color than the sprite
-        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
-
         screen.blit(self.image, self.rect)
+        # Create self.target_y line
+        pygame.draw.line(screen, (255, 0, 0), (0, self.target_y), (800, self.target_y), 2)
 
 
 class Bullet(pygame.sprite.Sprite):

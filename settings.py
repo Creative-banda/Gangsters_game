@@ -9,12 +9,13 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # All Sprite
 bullet_group = pygame.sprite.Group()
 ground_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
 
 # Constants
 
 BULLET_SIZE = (10, 5)
 BULLET_SPEED = 20
-PLAYER_SIZE = (50, 60)  # Target size for each frame
+PLAYER_SIZE = (80, 100)  # Target size for each frame
 SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 
