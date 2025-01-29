@@ -13,7 +13,8 @@ clock = pygame.time.Clock()
 
 
 # GAME VARIABLES
-bg_scroll = 0
+bg_scroll_x = 0
+bg_scroll_y = 0
 
 def create_map():
     global height, width, CELL_SIZE
@@ -49,7 +50,8 @@ class Ground(pygame.sprite.Sprite):
         self.rect.center = (x, y)
     
     def update(self):
-        self.rect.x -= bg_scroll
+        self.rect.x -= bg_scroll_x
+        self.rect.y -=bg_scroll_y
 
     
 player = Player()
@@ -58,7 +60,7 @@ create_map()
 
 
 def main():
-    global bg_scroll
+    global bg_scroll_x
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -75,7 +77,7 @@ def main():
         # Clear the screen with the background color
         screen.fill((255, 155, 155))
         # Update and draw the player
-        bg_scroll = player.move(ground_group)
+        bg_scroll_x = player.move(ground_group)
         player.update()
         player.draw(screen)
 

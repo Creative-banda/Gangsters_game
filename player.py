@@ -1,6 +1,6 @@
 
 import pygame
-from settings import PLAYER_ANIMATION, PLAYER_SIZE, BULLET_SIZE, BULLET_SPEED, SCREEN_THRUST, bullet_image
+from settings import PLAYER_ANIMATION, PLAYER_SIZE, BULLET_SIZE, BULLET_SPEED, SCREEN_THRUST_X, SCREEN_THRUST_Y, bullet_image
 
 
 bullet_group = pygame.sprite.Group()
@@ -158,11 +158,11 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
         # check for if player pass the screen threshhold and move the screen
-        if self.rect.right > SCREEN_THRUST:
+        if self.rect.right > SCREEN_THRUST_X:
             self.rect.x -= dx
             # return the added value from this method
             return dx
-        elif self.rect.left < SCREEN_THRUST and self.direction == -1 :
+        elif self.rect.left < SCREEN_THRUST_X and self.direction == -1 :
             self.rect.x -= dx
             # return the added value from this method
             return dx
