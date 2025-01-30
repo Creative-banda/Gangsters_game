@@ -3,6 +3,7 @@ import sys
 import json
 from player import Player, bullet_group
 from settings import screen, ground_group, enemy_group, background_image, CELL_SIZE
+from enemy import Enemy
 
 # Initialize Pygame
 pygame.init()
@@ -36,7 +37,7 @@ def create_map():
                 ground = Ground(world_x, world_y, cell)
                 ground_group.add(ground)
             elif cell == 7:  # Enemy
-                enemy = Enemy(world_x, world_y)
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2)
                 enemy_group.add(enemy)
             elif cell == 8:  # Player
                 player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
@@ -58,20 +59,6 @@ class Ground(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(self.image, self.rect)
 
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.Surface((50, 50))
-        self.image.fill((255, 0, 0))
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
-        self.rect = self.image.get_rect()
-        self.x = x
-        self.y = y
-        self.rect.center = (self.x, self.y)
-    
-    def update(self):
-        self.rect.x = self.x - bg_scroll_x
-        self.rect.y = self.y - bg_scroll_y
 
 player = Player()
 create_map()
@@ -114,7 +101,8 @@ def main():
         # Update and draw the enemy
         for enemy in enemy_group:
             enemy.update()
-            screen.blit(enemy.image, enemy.rect)
+            enemy.draw(screen, bg_scroll_x, bg_scroll_y)
+            enemy.move(player, ground_group)
 
         # Update the display
         pygame.display.flip()

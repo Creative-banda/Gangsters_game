@@ -30,7 +30,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.midbottom = (0, 600)  # Changed from center to midbottom
         self.screen_height = 600  # Add your actual screen height
-        self.target_y = self.screen_height - 70   # Position player near bottom
+        self.target_y = self.screen_height - 100   # Position player near bottom
 
         
     def load_animations(self):
@@ -117,7 +117,6 @@ class Player(pygame.sprite.Sprite):
         player_rect_horizontal.x = new_x
 
         # Check horizontal collisions
-        horizontal_collision = False
         for ground in ground_group:
             if player_rect_horizontal.colliderect(ground.rect):
                 if dx > 0:

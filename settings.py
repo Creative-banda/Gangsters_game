@@ -66,3 +66,42 @@ PLAYER_ANIMATION = {
     "animation_cooldown": 100
 },
 }
+
+ENEMY_ANIMATION = {
+"idle": {
+    "frame_count": 7,  # Number of frames
+    "image_path": "assets/enemy/Idle.png",  # Sprite sheet path,
+    "animation_cooldown": 100
+},
+"Run": {
+    "frame_count": 10,  # Number of frames
+    "image_path": "assets/enemy/Run.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+"Shot": {
+    "frame_count": 12,  # Number of frames
+    "image_path": "assets/enemy/Shot.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+"Walk": {
+    "frame_count": 10,  # Number of frames
+    "image_path": "assets/enemy/Walk.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+"Jump": {
+    "frame_count": 10,  # Number of frames
+    "image_path": "assets/enemy/Jump.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+
+"Reload": {
+    "frame_count": 6,  # Number of frames
+    "image_path": "assets/enemy/Recharge.png",  # Sprite sheet path
+    "animation_cooldown": 70
+},
+"Hurt": {
+    "frame_count": 4,  # Number of frames
+    "image_path": "assets/enemy/Hurt.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+}
