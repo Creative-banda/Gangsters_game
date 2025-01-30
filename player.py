@@ -16,7 +16,6 @@ class Player(pygame.sprite.Sprite):
         self.InAir = True
         self.vel_y = 0
         self.speed = 2
-        self.running_speed = 7
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False

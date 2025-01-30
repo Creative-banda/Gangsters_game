@@ -25,6 +25,7 @@ class Enemy(pygame.sprite.Sprite):
         self.move_counter = 0
         self.idling = False
         self.last_bullet_time = pygame.time.get_ticks()
+        self.speed = 0.7
         
         
         # Create a rect in front of the enemy as enemy vision
@@ -92,9 +93,9 @@ class Enemy(pygame.sprite.Sprite):
         dy += self.vel_y
         
         if self.direction == 1:
-            dx = 1
+            dx = self.speed
         else:
-            dx = -1
+            dx = -self.speed
 
 
         for ground in ground_group:
