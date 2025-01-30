@@ -101,8 +101,8 @@ def main():
         # Update and draw the enemy
         for enemy in enemy_group:
             enemy.update()
-            enemy.draw(screen, bg_scroll_x, bg_scroll_y)
             enemy.move(player, ground_group)
+            enemy.draw(screen, bg_scroll_x, bg_scroll_y)
 
         # Update the display
         pygame.display.flip()

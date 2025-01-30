@@ -211,6 +211,8 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
         screen.blit(self.image, self.rect)
 
+
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         super().__init__()
@@ -233,6 +235,9 @@ class Bullet(pygame.sprite.Sprite):
         for enemy in enemy_group:
             if self.rect.colliderect(enemy.rect):
                 self.kill()
+                enemy.update_animation("Hurt")
+                enemy.getting_hurt = True
+                enemy.take_damage()
         if self.rect.colliderect(player.rect):
             self.kill()
             player.update_animation("Hurt")
