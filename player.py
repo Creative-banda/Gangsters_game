@@ -1,8 +1,7 @@
 import pygame
-from settings import PLAYER_ANIMATION, PLAYER_SIZE, BULLET_SIZE, BULLET_SPEED, SCREEN_THRUST_X, SCREEN_THRUST_Y, bullet_image
+from settings import PLAYER_ANIMATION, PLAYER_SIZE, BULLET_SIZE, BULLET_SPEED, SCREEN_THRUST_X, bullet_image, bullet_group
 
 
-bullet_group = pygame.sprite.Group()
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -70,7 +69,7 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting:
             self.InAir = True
             self.speed = 4
-            self.vel_y = -11
+            self.vel_y = -14
             new_action = "Jump"
 
         # Allow horizontal movement even while in the air
@@ -197,7 +196,7 @@ class Player(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.last_bullet_time < 250 or self.isReloading:
             return
         self.isShooting = True
-        bullet = Bullet(self.rect.centerx, self.rect.centery, self.direction)
+        bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery, self.direction)
         bullet_group.add(bullet)
         self.last_bullet_time = pygame.time.get_ticks()
 
@@ -212,8 +211,6 @@ class Player(pygame.sprite.Sprite):
     def draw(self, screen):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
         screen.blit(self.image, self.rect)
-        # Create self.target_y line
-        # pygame.draw.line(screen, (255, 0, 0), (0, self.target_y), (800, self.target_y), 2)
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
@@ -224,12 +221,19 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.midbottom = (x, y+5)
         self.direction = direction
 
-    def update(self, ground_group):
-        self.check_collision(ground_group)
+    def update(self, ground_group, enemy_group, player):
+        self.check_collision(ground_group, enemy_group, player)
         self.rect.x += BULLET_SPEED * self.direction
         if self.rect.left > 800 or self.rect.right < 0:
             self.kill()
     
-    def check_collision(self, ground_group):
+    def check_collision(self, ground_group, enemy_group, player):
         if pygame.sprite.spritecollide(self, ground_group, False):
             self.kill()
+        
+        for enemy in enemy_group:
+            if self.rect.colliderect(enemy.rect):
+                self.kill()
+        if self.rect.colliderect(player.rect):
+            self.kill()
+            player.update_animation("Hurt")

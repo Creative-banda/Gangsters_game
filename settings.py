@@ -10,6 +10,14 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bullet_group = pygame.sprite.Group()
 ground_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
+bullet_group = pygame.sprite.Group()
+
+
+# images
+
+bullet_image = pygame.image.load("assets/bullet.png").convert_alpha()
+background_image = pygame.image.load("assets/background.jpg").convert_alpha()
+
 
 # Constants
 
@@ -20,12 +28,6 @@ SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 CELL_SIZE = 70
 
-
-
-# images
-
-bullet_image = pygame.image.load("assets/bullet.png").convert_alpha()
-background_image = pygame.image.load("assets/background.jpg").convert_alpha()
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns
 PLAYER_ANIMATION = {
@@ -81,7 +83,7 @@ ENEMY_ANIMATION = {
 "Shot": {
     "frame_count": 12,  # Number of frames
     "image_path": "assets/enemy/Shot.png",  # Sprite sheet path
-    "animation_cooldown": 100
+    "animation_cooldown": 70
 },
 "Walk": {
     "frame_count": 10,  # Number of frames

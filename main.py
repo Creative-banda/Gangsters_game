@@ -90,7 +90,7 @@ def main():
         player.draw(screen)
 
         # Update and draw the bullets
-        bullet_group.update(ground_group)
+        bullet_group.update(ground_group, enemy_group, player)
         bullet_group.draw(screen)
 
         # Update and draw the ground
