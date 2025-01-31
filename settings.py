@@ -15,8 +15,9 @@ bullet_group = pygame.sprite.Group()
 
 # images
 
-bullet_image = pygame.image.load("assets/bullet.png").convert_alpha()
-background_image = pygame.image.load("assets/background.jpg").convert_alpha()
+bullet_image = pygame.image.load("assets/image/bullet.png").convert_alpha()
+
+background_image = pygame.image.load("assets/image/background/2.png").convert_alpha()
 
 
 # Constants
@@ -33,38 +34,38 @@ CELL_SIZE = 70
 PLAYER_ANIMATION = {
 "idle": {
     "frame_count": 6,  # Number of frames
-    "image_path": "assets/player/Idle.png",  # Sprite sheet path,
+    "image_path": "assets/image/player/Idle.png",  # Sprite sheet path,
     "animation_cooldown": 100
 },
 "Run": {
     "frame_count": 10,  # Number of frames
-    "image_path": "assets/player/Run.png",  # Sprite sheet path
+    "image_path": "assets/image/player/Run.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 "Shot": {
     "frame_count": 4,  # Number of frames
-    "image_path": "assets/player/Shot.png",  # Sprite sheet path
+    "image_path": "assets/image/player/Shot.png",  # Sprite sheet path
     "animation_cooldown": 50
 },
 "Walk": {
     "frame_count": 10,  # Number of frames
-    "image_path": "assets/player/Walk.png",  # Sprite sheet path
+    "image_path": "assets/image/player/Walk.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 "Jump": {
     "frame_count": 10,  # Number of frames
-    "image_path": "assets/player/Jump.png",  # Sprite sheet path
+    "image_path": "assets/image/player/Jump.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 
 "Reload": {
     "frame_count": 17,  # Number of frames
-    "image_path": "assets/player/Recharge.png",  # Sprite sheet path
+    "image_path": "assets/image/player/Recharge.png",  # Sprite sheet path
     "animation_cooldown": 70
 },
 "Hurt": {
     "frame_count": 5,  # Number of frames
-    "image_path": "assets/player/Hurt.png",  # Sprite sheet path
+    "image_path": "assets/image/player/Hurt.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 }
@@ -72,38 +73,44 @@ PLAYER_ANIMATION = {
 ENEMY_ANIMATION = {
 "idle": {
     "frame_count": 7,  # Number of frames
-    "image_path": "assets/enemy/Idle.png",  # Sprite sheet path,
+    "image_path": "assets/image/enemy/Idle.png",  # Sprite sheet path,
     "animation_cooldown": 100
 },
 "Run": {
     "frame_count": 10,  # Number of frames
-    "image_path": "assets/enemy/Run.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy/Run.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 "Shot": {
     "frame_count": 12,  # Number of frames
-    "image_path": "assets/enemy/Shot.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy/Shot.png",  # Sprite sheet path
     "animation_cooldown": 70
 },
 "Walk": {
     "frame_count": 10,  # Number of frames
-    "image_path": "assets/enemy/Walk.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy/Walk.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 "Jump": {
     "frame_count": 10,  # Number of frames
-    "image_path": "assets/enemy/Jump.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy/Jump.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 
 "Reload": {
     "frame_count": 6,  # Number of frames
-    "image_path": "assets/enemy/Recharge.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy/Recharge.png",  # Sprite sheet path
     "animation_cooldown": 70
 },
 "Hurt": {
     "frame_count": 4,  # Number of frames
-    "image_path": "assets/enemy/Hurt.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy/Hurt.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+
+"Dead": {
+    "frame_count": 5,  # Number of frames
+    "image_path": "assets/image/enemy/Dead.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 }

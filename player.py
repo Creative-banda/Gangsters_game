@@ -233,7 +233,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
         
         for enemy in enemy_group:
-            if self.rect.colliderect(enemy.rect):
+            if self.rect.colliderect(enemy.rect) and enemy.alive:
                 self.kill()
                 enemy.update_animation("Hurt")
                 enemy.getting_hurt = True

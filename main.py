@@ -15,8 +15,10 @@ clock = pygame.time.Clock()
 bg_scroll_x = 0
 bg_scroll_y = 0
 
+
+
 def create_map():
-    global CELL_SIZE, background_image
+    global CELL_SIZE, background_image, bg_images
     # Load the level 1 as json file 
     with open("assets/level_1.json") as file:
         maze_layout = json.load(file)
@@ -24,9 +26,10 @@ def create_map():
     height = len(maze_layout)
     width = len(maze_layout[0])
 
+    # Load the background image
+    
     background_image = pygame.transform.scale(background_image, (width * CELL_SIZE, height * CELL_SIZE))
     
-
     # First create all ground tiles without any offset
     for y, row in enumerate(maze_layout):
         for x, cell in enumerate(row):
@@ -45,7 +48,7 @@ def create_map():
 class Ground(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         super().__init__()
-        self.image = pygame.image.load(f"assets/map/{image}.png")
+        self.image = pygame.image.load(f"assets/image/map/{image}.png")
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.rect = self.image.get_rect()
         self.x = x
@@ -79,8 +82,10 @@ def main():
                     
 
         # Draw the background
-        screen.fill((0, 0, 0))
-        screen.blit(background_image, (0, 0))
+        screen.fill((119,120,121))
+        
+        # Draw the background image
+        screen.blit(background_image, (0 -bg_scroll_x, 0 - bg_scroll_y))
         
         # Update and draw the player
         x, y = player.move(ground_group)

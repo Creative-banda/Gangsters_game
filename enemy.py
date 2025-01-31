@@ -25,10 +25,19 @@ class Enemy(pygame.sprite.Sprite):
         self.idling = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.speed = 0.7
+        self.alive = True
         
         # Create a rect in front of the enemy as enemy vision
-        self.vision_rect = pygame.Rect(self.x, self.y, 200, 50)
+        self.vision_rect = pygame.Rect(self.x, self.y, 300, 50)
         self.vision_rect.center = self.rect.center
+        
+        # Create a health bar in the top of the enemy as health bar
+        self.health = 100
+        self.max_health = 100
+        self.health_bar_length = 50
+        self.health_ratio = self.max_health / self.health_bar_length
+        # creating a rect for health bar
+        self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5)
         
     def take_damage(self):
         if not self.isHurt:  # Only trigger hurt if not already hurt
@@ -38,6 +47,14 @@ class Enemy(pygame.sprite.Sprite):
             self.isShoting = False
             self.isReloading = False
             self.idling = False
+            
+            # update the health bar
+            self.health -= 40
+            self.health_bar.width = self.health / self.health_ratio
+            if self.health <= 0:
+                self.update_animation("Dead")
+                self.alive = False
+            
     
     def shoot(self):
         if self.isHurt:  # Don't shoot if hurt
@@ -46,7 +63,7 @@ class Enemy(pygame.sprite.Sprite):
             return
         if self.frame_index == 5:
             self.isShooting = True
-            bullet = Bullet(self.rect.centerx + + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery-10, self.direction)
+            bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery-10, self.direction)
             bullet_group.add(bullet)
             self.last_bullet_time = pygame.time.get_ticks()
     
@@ -58,7 +75,7 @@ class Enemy(pygame.sprite.Sprite):
 
             cut_top = 50
             cut_left = 33
-            cut_right = 33
+            cut_right = 25
             frame_height = 128 - cut_top
             frame_width = 128 - (cut_left + cut_right)
 
@@ -68,7 +85,7 @@ class Enemy(pygame.sprite.Sprite):
                 frame = sprite_sheet.subsurface(
                     (x, y, frame_width, frame_height)
                 )
-                frame = pygame.transform.scale(frame, PLAYER_SIZE)
+                # frame = pygame.transform.scale(frame, PLAYER_SIZE)
                 frames.append(frame)
 
             self.animations[action] = frames
@@ -87,17 +104,22 @@ class Enemy(pygame.sprite.Sprite):
             elif self.current_action == "Shot" and self.frame_index >= len(self.animations[self.current_action]):
                 self.update_animation("idle")
             
+            elif self.current_action == "Dead" and self.frame_index >= len(self.animations[self.current_action]):
+                self.alive = False
+                self.frame_index = len(self.animations[self.current_action]) - 1
+            
             # Loop animation
-            if self.frame_index >= len(self.animations[self.current_action]):
+            if self.frame_index >= len(self.animations[self.current_action]) and self.alive:
                 self.frame_index = 0
 
         self.image = self.animations[self.current_action][self.frame_index]
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
         
+        
     def move(self, player, ground_group):
         if self.isHurt:  # Don't move if hurt
             return
-            
+                    
         dy = 0
         self.vel_y += 0.5
         dy += self.vel_y
@@ -133,12 +155,13 @@ class Enemy(pygame.sprite.Sprite):
             if temp_rect.colliderect(ground.rect):
                 if temp_rect.right > ground.rect.left:
                     dx = 0
-                    self.direction *= -1
-
 
         self.rect.y += dy
 
-        self.ai(player, dx, dy)        
+        self.ai(player, dx, dy)    
+            
+        
+        
     
     def update_animation(self, new_action):
         if new_action != self.current_action:
@@ -154,6 +177,15 @@ class Enemy(pygame.sprite.Sprite):
         
         # pygame.draw.rect(screen, (0,255,0), self.rect, 1)
         # pygame.draw.rect(screen, (255, 0, 0), self.vision_rect, 1)
+        
+            
+        # Update health bar position
+        self.health_bar.centerx = self.rect.centerx
+        self.health_bar.y = self.rect.y 
+
+        
+        # Draw health bar
+        pygame.draw.rect(screen, (255, 0, 0), self.health_bar)
 
     def ai(self, player, dx, dy):
         if self.isHurt:  # Don't perform AI actions if hurt
