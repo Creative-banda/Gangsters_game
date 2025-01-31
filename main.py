@@ -33,7 +33,7 @@ def create_map():
             world_x = x * CELL_SIZE
             world_y = y * CELL_SIZE
             
-            if cell > 0 and cell < 6:  # Ground
+            if cell > 0 and cell <= 6:  # Ground
                 ground = Ground(world_x, world_y, cell)
                 ground_group.add(ground)
             elif cell == 7:  # Enemy

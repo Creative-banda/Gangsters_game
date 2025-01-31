@@ -131,12 +131,9 @@ class Enemy(pygame.sprite.Sprite):
         # Check horizontal collisions
         for ground in ground_group:
             if temp_rect.colliderect(ground.rect):
-                if dx > 0:
-                    dx =0
-
-                elif dx < 0:
+                if temp_rect.right > ground.rect.left:
                     dx = 0
-                break
+                    self.direction *= -1
 
 
         self.rect.y += dy
