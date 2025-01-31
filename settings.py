@@ -24,10 +24,10 @@ background_image = pygame.image.load("assets/image/background/2.png").convert_al
 
 BULLET_SIZE = (10, 5)
 BULLET_SPEED = 20
-PLAYER_SIZE = (20, 30)  # Target size for each frame
+PLAYER_SIZE = (70, 90)  # Target size for each frame
 SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
-CELL_SIZE = 20
+CELL_SIZE = 70
 
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns
