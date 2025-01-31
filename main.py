@@ -19,6 +19,8 @@ bg_scroll_y = 0
 
 def create_map():
     global CELL_SIZE, background_image, bg_images
+    
+    exit = None
     # Load the level 1 as json file 
     with open("assets/level_1.json") as file:
         maze_layout = json.load(file)
@@ -44,6 +46,27 @@ def create_map():
                 enemy_group.add(enemy)
             elif cell == 8:  # Player
                 player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
+            elif cell == 9:
+                exit = Exit(world_x, world_y)
+            
+    return exit
+
+class Exit(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load("assets/image/map/exit.png")
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE * 2))
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.bottomright = (self.x, self.y - CELL_SIZE)
+    
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+    
+    def draw(self):
+        screen.blit(self.image, self.rect)
 
 class Ground(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
@@ -64,10 +87,11 @@ class Ground(pygame.sprite.Sprite):
 
 
 player = Player()
-create_map()
+
 
 def main():
     global bg_scroll_x, bg_scroll_y
+    exit = create_map()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -102,6 +126,11 @@ def main():
         for ground in ground_group:
             ground.update()
             ground.draw()
+        
+        # Update and draw the exit
+        exit.update()
+        exit.draw()
+        
 
         # Update and draw the enemy
         for enemy in enemy_group:

@@ -39,7 +39,7 @@ class Player(pygame.sprite.Sprite):
 
             # Define adjustments for cutting padding
             cut_top = 50  # Pixels to remove from the top
-            cut_left = 33 # Pixels to remove from the left
+            cut_left = 25 # Pixels to remove from the left
             cut_right = 33  # Pixels to remove from the right
             frame_height = 128 - cut_top  # Adjusted height
             frame_width = 128 - (cut_left + cut_right)  # Adjusted width
