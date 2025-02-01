@@ -10,7 +10,6 @@ class Player(pygame.sprite.Sprite):
         self.frame_index = 0
         self.current_action = "Jump"
         self.animations = {}
-        self.animation_cooldown = 100
         self.direction = 1  # 1: Right, -1: Left
         self.last_update_time = pygame.time.get_ticks()
         self.InAir = True
@@ -19,6 +18,8 @@ class Player(pygame.sprite.Sprite):
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False
+        self.health = 100
+        self.alive = True
 
         # Load animations
         self.load_animations()
@@ -39,7 +40,7 @@ class Player(pygame.sprite.Sprite):
 
             # Define adjustments for cutting padding
             cut_top = 50  # Pixels to remove from the top
-            cut_left = 25 # Pixels to remove from the left
+            cut_left = 33 # Pixels to remove from the left
             cut_right = 33  # Pixels to remove from the right
             frame_height = 128 - cut_top  # Adjusted height
             frame_width = 128 - (cut_left + cut_right)  # Adjusted width
@@ -177,12 +178,18 @@ class Player(pygame.sprite.Sprite):
                 self.isShooting = False
             elif self.current_action == "Hurt" and self.frame_index >= len(self.animations[self.current_action]):
                 self.update_animation("idle")
-
-            # Loop animation
-            if self.frame_index >= len(self.animations[self.current_action]):
-                self.frame_index = 0
-
-        self.image = self.animations[self.current_action][self.frame_index]
+            elif self.current_action == "Dead" and self.frame_index >= len(self.animations[self.current_action]):
+                self.alive = False
+                self.frame_index = len(self.animations[self.current_action])
+            
+            if self.alive:
+                # Loop animation
+                if self.frame_index >= len(self.animations[self.current_action]):
+                    self.frame_index = 0
+        try:
+            self.image = self.animations[self.current_action][self.frame_index]
+        except:
+            self.image = self.animations[self.current_action][len(self.animations[self.current_action])-1]
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
 
     def reload(self):
@@ -192,7 +199,7 @@ class Player(pygame.sprite.Sprite):
         self.update_animation("Reload")
 
     def shoot(self):
-        if pygame.time.get_ticks() - self.last_bullet_time < 250 or self.isReloading:
+        if pygame.time.get_ticks() - self.last_bullet_time < 500 or self.isReloading:
             return
         self.isShooting = True
         bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery, self.direction)
@@ -238,6 +245,13 @@ class Bullet(pygame.sprite.Sprite):
                 enemy.update_animation("Hurt")
                 enemy.getting_hurt = True
                 enemy.take_damage()
+                
         if self.rect.colliderect(player.rect):
             self.kill()
-            player.update_animation("Hurt")
+            player.health -= 40
+            if player.health <= 0:
+                player.update_animation("Dead")
+                player.alive = False
+            else:
+                player.update_animation("Hurt")
+        

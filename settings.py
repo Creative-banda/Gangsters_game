@@ -45,7 +45,7 @@ PLAYER_ANIMATION = {
 "Shot": {
     "frame_count": 4,  # Number of frames
     "image_path": "assets/image/player/Shot.png",  # Sprite sheet path
-    "animation_cooldown": 50
+    "animation_cooldown": 100
 },
 "Walk": {
     "frame_count": 10,  # Number of frames
@@ -64,6 +64,11 @@ PLAYER_ANIMATION = {
     "animation_cooldown": 70
 },
 "Hurt": {
+    "frame_count": 5,  # Number of frames
+    "image_path": "assets/image/player/Hurt.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+"Dead": {
     "frame_count": 5,  # Number of frames
     "image_path": "assets/image/player/Hurt.png",  # Sprite sheet path
     "animation_cooldown": 100
