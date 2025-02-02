@@ -1,10 +1,22 @@
 import pygame
 
 pygame.init()
+pygame.mixer.init()
+
+
 
 SCREEN_WIDTH,SCREEN_HEIGHT = 800,600
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Constants
+BULLET_SIZE = (10, 5)
+BULLET_SPEED = 20
+PLAYER_SIZE = (70, 80)  # Target size for each frame
+SCREEN_THRUST_X = SCREEN_HEIGHT - 200
+SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
+CELL_SIZE = 70
+
 
 # All Sprite
 bullet_group = pygame.sprite.Group()
@@ -15,19 +27,18 @@ bullet_group = pygame.sprite.Group()
 
 # images
 
-bullet_image = pygame.image.load("assets/image/bullet.png").convert_alpha()
+bullet_image = pygame.image.load("assets/image/bullets/bullet.png").convert_alpha()
+bullet_image = pygame.transform.scale(bullet_image, BULLET_SIZE)
 
 background_image = pygame.image.load("assets/image/background/2.png").convert_alpha()
 
 
-# Constants
+# sound effects
 
-BULLET_SIZE = (10, 5)
-BULLET_SPEED = 20
-PLAYER_SIZE = (70, 90)  # Target size for each frame
-SCREEN_THRUST_X = SCREEN_HEIGHT - 200
-SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
-CELL_SIZE = 70
+bullet_sound = pygame.mixer.Sound("assets/sfx/rifle.mp3")
+bg_music = pygame.mixer.Sound("assets/sfx/bg_music.mp3")
+
+
 
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns
@@ -70,8 +81,8 @@ PLAYER_ANIMATION = {
 },
 "Dead": {
     "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/player/Hurt.png",  # Sprite sheet path
-    "animation_cooldown": 100
+    "image_path": "assets/image/player/Dead.png",  # Sprite sheet path
+    "animation_cooldown": 150
 },
 }
 

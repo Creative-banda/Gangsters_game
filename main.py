@@ -2,7 +2,7 @@ import pygame
 import sys
 import json
 from player import Player, bullet_group
-from settings import screen, ground_group, enemy_group, background_image, CELL_SIZE
+from settings import screen, ground_group, enemy_group, background_image, CELL_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH, bg_music
 from enemy import Enemy
 
 # Initialize Pygame
@@ -14,8 +14,25 @@ clock = pygame.time.Clock()
 # GAME VARIABLES
 bg_scroll_x = 0
 bg_scroll_y = 0
+isfading = False
+
+font = pygame.font.Font(None, 36)
+
+# play background music
+
+bg_music.play(-1)
 
 
+ # Create a surface for the fade out
+outro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+outro_surface.fill((220, 20, 60))
+
+# Create a surface for the fade in
+
+intro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+intro_surface.fill((0, 200, 255))  # Neon Cyan
+
+fade_alpha = 255
 
 def create_map():
     global CELL_SIZE, background_image, bg_images
@@ -86,6 +103,32 @@ class Ground(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
 
+# Fade Out Screen Transition
+
+def fade_outro():
+    global fade_alpha
+    if fade_alpha < 255:  # Increase opacity over time
+        fade_alpha += 2
+    outro_surface.set_alpha(fade_alpha)
+    screen.blit(outro_surface, (0, 0))
+
+    if fade_alpha >= 255:
+        #display game over screen
+        text = font.render("Game Over", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        screen.blit(text, text_rect)
+
+
+def fade_intro():
+    global fade_alpha
+    if fade_alpha > 0:  # Increase opacity over time
+        fade_alpha -= 5
+    intro_surface.set_alpha(fade_alpha)
+    screen.blit(intro_surface, (0, 0))
+
+
+
+
 player = Player()
 
 
@@ -118,6 +161,9 @@ def main():
         player.update()
         player.draw(screen)
 
+
+        
+
         # Update and draw the bullets
         bullet_group.update(ground_group, enemy_group, player)
         bullet_group.draw(screen)
@@ -137,6 +183,12 @@ def main():
             enemy.update()
             enemy.move(player, ground_group)
             enemy.draw(screen, bg_scroll_x, bg_scroll_y)
+        
+        if not player.alive:
+            fade_outro()
+        else:
+            fade_intro()
+
 
         # Update the display
         pygame.display.flip()
