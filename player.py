@@ -1,9 +1,11 @@
-import pygame
-from settings import PLAYER_ANIMATION, PLAYER_SIZE, BULLET_SIZE, BULLET_SPEED, SCREEN_THRUST_X, bullet_image, bullet_group
+import pygame, random
+from settings import PLAYER_ANIMATION, PLAYER_SIZE, bullet_sound, BULLET_SPEED, SCREEN_THRUST_X, bullet_image, bullet_group
 
 
+jump_sounds = ["jump","jump_2"]
 
 class Player(pygame.sprite.Sprite):
+
     def __init__(self):
         super().__init__()
 
@@ -39,8 +41,8 @@ class Player(pygame.sprite.Sprite):
             sprite_sheet = pygame.image.load(data["image_path"]).convert_alpha()
 
             # Define adjustments for cutting padding
-            cut_top = 50  # Pixels to remove from the top
-            cut_left = 33 # Pixels to remove from the left
+            cut_top = 55  # Pixels to remove from the top
+            cut_left = 25 # Pixels to remove from the left
             cut_right = 33  # Pixels to remove from the right
             frame_height = 128 - cut_top  # Adjusted height
             frame_width = 128 - (cut_left + cut_right)  # Adjusted width
@@ -58,6 +60,8 @@ class Player(pygame.sprite.Sprite):
             self.animations[action] = frames
 
     def move(self, ground_group):
+        if not self.alive:
+            self.update_animation("Dead")
         dx = 0
         dy = 0
         screen_dx = 0
@@ -66,14 +70,25 @@ class Player(pygame.sprite.Sprite):
         new_action = None
 
         # Handle Jumping
-        if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting:
+        if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
             self.speed = 4
             self.vel_y = -14
             new_action = "Jump"
 
+            # play a random jump sound
+            sound = random.choice(jump_sounds)
+            if sound == "jump":
+                jump = pygame.mixer.Sound(f"assets/sfx/{sound}.mp3")
+                # reduce the volume of the jump sound
+                jump.set_volume(0.5)
+                jump.play()
+            else:
+                pygame.mixer.Sound(f"assets/sfx/{sound}.mp3").play()
+
+
         # Allow horizontal movement even while in the air
-        if (keys[pygame.K_a] or keys[pygame.K_d]) and (not self.isReloading and not self.isShooting):
+        if (keys[pygame.K_a] or keys[pygame.K_d]) and (not self.isReloading and not self.isShooting) and self.alive:
             if keys[pygame.K_a]:
                 dx = -self.speed
                 self.direction = -1
@@ -81,7 +96,7 @@ class Player(pygame.sprite.Sprite):
                 dx = self.speed
                 self.direction = 1
 
-            if not self.InAir and not self.isReloading and not self.isShooting:
+            if not self.InAir and not self.isReloading and not self.isShooting and self.alive:
                 if keys[pygame.K_LSHIFT]:
                     dx *= 2
                     new_action = "Run"
@@ -89,13 +104,14 @@ class Player(pygame.sprite.Sprite):
                     new_action = "Walk"
 
         # Handle Shooting
-        elif keys[pygame.K_SPACE] and not self.isReloading and not self.isShooting:
+        elif keys[pygame.K_SPACE] and not self.isReloading and not self.isShooting and self.alive:
             new_action = "Shot"
+            
             self.shoot()
         
         # Check dummy hurt animation
         elif keys[pygame.K_h]:
-            new_action = "Hurt"
+            self.alive = False
 
         # Idle animation if no other actions are active
         elif not self.InAir and not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_SPACE]) and not self.isReloading:
@@ -103,7 +119,7 @@ class Player(pygame.sprite.Sprite):
                 new_action = "idle"
 
         # Update animation if needed
-        if new_action:
+        if new_action and self.alive:
             self.update_animation(new_action)
 
         # Apply gravity
@@ -168,7 +184,6 @@ class Player(pygame.sprite.Sprite):
         if current_time - self.last_update_time > PLAYER_ANIMATION[self.current_action]["animation_cooldown"]:
             self.last_update_time = current_time
             self.frame_index += 1
-
             # Reset Jump animation when it ends
             if self.current_action == "Jump" and self.frame_index >= len(self.animations[self.current_action]):
                 self.InAir = True
@@ -179,7 +194,6 @@ class Player(pygame.sprite.Sprite):
             elif self.current_action == "Hurt" and self.frame_index >= len(self.animations[self.current_action]):
                 self.update_animation("idle")
             elif self.current_action == "Dead" and self.frame_index >= len(self.animations[self.current_action]):
-                self.alive = False
                 self.frame_index = len(self.animations[self.current_action])
             
             if self.alive:
@@ -204,6 +218,7 @@ class Player(pygame.sprite.Sprite):
         self.isShooting = True
         bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery, self.direction)
         bullet_group.add(bullet)
+        bullet_sound.play()
         self.last_bullet_time = pygame.time.get_ticks()
 
     def update_animation(self, new_action):
@@ -218,13 +233,15 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
         screen.blit(self.image, self.rect)
 
+        # display the collision bar
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
+
 
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         super().__init__()
         self.image = bullet_image
-        self.image = pygame.transform.scale(self.image, BULLET_SIZE)
         self.rect = self.image.get_rect()
         self.rect.midbottom = (x, y+5)
         self.direction = direction
@@ -250,8 +267,6 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
             player.health -= 40
             if player.health <= 0:
-                player.update_animation("Dead")
                 player.alive = False
             else:
                 player.update_animation("Hurt")
-        

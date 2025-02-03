@@ -2,6 +2,7 @@ import pygame, random
 from settings import PLAYER_SIZE, ENEMY_ANIMATION, CELL_SIZE
 from player import Bullet, bullet_group
 
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -54,6 +55,8 @@ class Enemy(pygame.sprite.Sprite):
             if self.health <= 0:
                 self.update_animation("Dead")
                 self.alive = False
+                sound = random.randint(0,3)
+                pygame.mixer.Sound(f"assets/sfx/enemy_die/{sound}.mp3").play()
             
     
     def shoot(self):
@@ -66,6 +69,7 @@ class Enemy(pygame.sprite.Sprite):
             bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery-10, self.direction)
             bullet_group.add(bullet)
             self.last_bullet_time = pygame.time.get_ticks()
+            pygame.mixer.Sound("assets/sfx/pistol.mp3").play()
     
     def load_animations(self):
         """Load animations from the defined data."""
@@ -177,8 +181,7 @@ class Enemy(pygame.sprite.Sprite):
         
         # pygame.draw.rect(screen, (0,255,0), self.rect, 1)
         # pygame.draw.rect(screen, (255, 0, 0), self.vision_rect, 1)
-        
-            
+
         # Update health bar position
         self.health_bar.centerx = self.rect.centerx
         self.health_bar.y = self.rect.y 
@@ -197,7 +200,7 @@ class Enemy(pygame.sprite.Sprite):
             self.idle_counter = 100
             self.dx = 0
             
-        if self.vision_rect.colliderect(player.rect):
+        if self.vision_rect.colliderect(player.rect) and player.alive:
             self.direction = 1 if player.rect.x > self.rect.x else -1
             self.update_animation("Shot")
             self.shoot()
