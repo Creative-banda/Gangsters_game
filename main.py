@@ -2,7 +2,7 @@ import pygame
 import sys
 import json
 from player import Player, bullet_group
-from settings import screen, ground_group, enemy_group, background_image, CELL_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH, bg_music
+from settings import screen, ground_group, enemy_group, background_image, CELL_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH, bg_music, BULLET_INFO, heart_image,bullet_icon, remaining_bullet_icon
 from enemy import Enemy
 
 # Initialize Pygame
@@ -16,7 +16,7 @@ bg_scroll_x = 0
 bg_scroll_y = 0
 isfading = False
 
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(None, 25)
 
 # play background music
 
@@ -147,7 +147,7 @@ def main():
                 if event.key == pygame.K_r:
                     player.reload()
                     
-
+                    
         # Draw the background
         screen.fill((119,120,121))
         
@@ -161,8 +161,6 @@ def main():
         player.update()
         player.draw(screen)
 
-
-        
 
         # Update and draw the bullets
         bullet_group.update(ground_group, enemy_group, player)
@@ -183,6 +181,26 @@ def main():
             enemy.update()
             enemy.move(player, ground_group)
             enemy.draw(screen, bg_scroll_x, bg_scroll_y)
+        
+        # Display HUD        
+        current_ammo = BULLET_INFO[player.current_gun]['remaining'] if BULLET_INFO[player.current_gun]['remaining'] > 0 else "No Ammo"
+        text = font.render(f"{current_ammo}", True, (255, 255, 255))
+        screen.blit(text, (40, 50))
+        screen.blit(bullet_icon, (15, 45))
+
+        remaining_ammo = BULLET_INFO[player.current_gun]['total'] if BULLET_INFO[player.current_gun]['total'] > 0 else "No Ammo"
+        text = font.render(f"Remain: {remaining_ammo}", True, (255, 255, 255))
+        screen.blit(text, (40, 90))
+        screen.blit(remaining_bullet_icon, (10, 85))
+                        
+        # player health
+        player.health_bar.width = player.health_ratio * player.health
+        
+        # Text for health
+        screen.blit(heart_image, (10, 10))
+        
+        pygame.draw.rect(screen, (0, 255, 0), player.health_bar)
+        pygame.draw.rect(screen, (255, 0, 0), player.health_bar, 2)
         
         if not player.alive:
             fade_outro()

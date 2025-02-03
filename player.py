@@ -1,5 +1,5 @@
 import pygame, random
-from settings import PLAYER_ANIMATION, PLAYER_SIZE, bullet_sound, BULLET_SPEED, SCREEN_THRUST_X, bullet_image, bullet_group
+from settings import *
 
 
 jump_sounds = ["jump","jump_2"]
@@ -22,6 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.isShooting = False
         self.health = 100
         self.alive = True
+        self.current_gun = "rifle"
 
         # Load animations
         self.load_animations()
@@ -32,6 +33,14 @@ class Player(pygame.sprite.Sprite):
         self.rect.midbottom = (0, 600)  # Changed from center to midbottom
         self.screen_height = 600  # Add your actual screen height
         self.target_y = self.screen_height - 100   # Position player near bottom
+        
+        # Create a health bar in the top of the player as health bar
+        self.max_health = 200
+        self.health_bar_length = 100
+        self.health_ratio = self.max_health / self.health_bar_length
+        # creating a rect for health bar
+        self.health_bar = pygame.Rect(40, 10, self.health_bar_length, 20)
+        
 
         
     def load_animations(self):
@@ -41,7 +50,7 @@ class Player(pygame.sprite.Sprite):
             sprite_sheet = pygame.image.load(data["image_path"]).convert_alpha()
 
             # Define adjustments for cutting padding
-            cut_top = 55  # Pixels to remove from the top
+            cut_top = 40  # Pixels to remove from the top
             cut_left = 25 # Pixels to remove from the left
             cut_right = 33  # Pixels to remove from the right
             frame_height = 128 - cut_top  # Adjusted height
@@ -105,20 +114,22 @@ class Player(pygame.sprite.Sprite):
 
         # Handle Shooting
         elif keys[pygame.K_SPACE] and not self.isReloading and not self.isShooting and self.alive:
-            new_action = "Shot"
-            
-            self.shoot()
-        
-        # Check dummy hurt animation
-        elif keys[pygame.K_h]:
-            self.alive = False
+            if BULLET_INFO[self.current_gun]["remaining"] != 0:
+                new_action = "Shot"
+                self.shoot()
+            else:
+                new_action = "idle"
+                if pygame.time.get_ticks() - self.last_bullet_time > 700:
+                    empty_mag_sound.play()
+                    self.last_bullet_time = pygame.time.get_ticks()
+
 
         # Idle animation if no other actions are active
         elif not self.InAir and not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_SPACE]) and not self.isReloading:
             if not self.current_action == "Hurt":
                 new_action = "idle"
 
-        # Update animation if needed
+        # Update animation
         if new_action and self.alive:
             self.update_animation(new_action)
 
@@ -207,10 +218,20 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
 
     def reload(self):
-        if self.isReloading:
+        if self.isReloading or BULLET_INFO[self.current_gun]["remaining"] == BULLET_INFO[self.current_gun]["mag_size"] or BULLET_INFO[self.current_gun]["total"] == 0:
             return
         self.isReloading = True
         self.update_animation("Reload")
+        reload_sound.play()
+        
+        # decreasing the total bullets by the remaining bullets
+        bullet_got_shooted = BULLET_INFO[self.current_gun]["mag_size"] - BULLET_INFO[self.current_gun]["remaining"]
+        if BULLET_INFO[self.current_gun]["total"] < bullet_got_shooted:
+            BULLET_INFO[self.current_gun]["remaining"] = BULLET_INFO[self.current_gun]["total"]
+            BULLET_INFO[self.current_gun]["total"] = 0
+        else:
+            BULLET_INFO[self.current_gun]["total"] -= (BULLET_INFO[self.current_gun]["mag_size"] - BULLET_INFO[self.current_gun]["remaining"])
+            BULLET_INFO[self.current_gun]["remaining"] = BULLET_INFO[self.current_gun]["mag_size"]
 
     def shoot(self):
         if pygame.time.get_ticks() - self.last_bullet_time < 500 or self.isReloading:
@@ -220,6 +241,7 @@ class Player(pygame.sprite.Sprite):
         bullet_group.add(bullet)
         bullet_sound.play()
         self.last_bullet_time = pygame.time.get_ticks()
+        BULLET_INFO[self.current_gun]["remaining"] -= 1
 
     def update_animation(self, new_action):
         if new_action != self.current_action:
@@ -232,6 +254,9 @@ class Player(pygame.sprite.Sprite):
     def draw(self, screen):
         self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
         screen.blit(self.image, self.rect)
+        
+
+        
 
         # display the collision bar
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
