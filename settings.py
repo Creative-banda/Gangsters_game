@@ -23,6 +23,7 @@ bullet_group = pygame.sprite.Group()
 ground_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
+collect_item_group = pygame.sprite.Group()
 
 
 # images
@@ -41,6 +42,8 @@ bullet_sound = pygame.mixer.Sound("assets/sfx/rifle.mp3")
 bg_music = pygame.mixer.Sound("assets/sfx/bg_music.mp3")
 reload_sound = pygame.mixer.Sound("assets/sfx/reload.mp3")
 empty_mag_sound = pygame.mixer.Sound("assets/sfx/empty_gun.mp3")
+health_pickup_sound = pygame.mixer.Sound("assets/sfx/health_pickup.mp3")
+bullet_pickup_sound = pygame.mixer.Sound("assets/sfx/bullet_pickup.mp3")    
 
 
 

@@ -2,7 +2,7 @@ import pygame
 import sys
 import json
 from player import Player, bullet_group
-from settings import screen, ground_group, enemy_group, background_image, CELL_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH, bg_music, BULLET_INFO, heart_image,bullet_icon, remaining_bullet_icon
+from settings import *
 from enemy import Enemy
 
 # Initialize Pygame
@@ -16,12 +16,14 @@ bg_scroll_x = 0
 bg_scroll_y = 0
 isfading = False
 
-font = pygame.font.Font(None, 25)
+font = pygame.font.Font('assets/font/Pricedown.otf', 25)
+big_font = pygame.font.Font("assets/font/Pricedown.otf", 50)
 
 # play background music
 
 bg_music.play(-1)
 
+isDeathSoundPlay = False
 
  # Create a surface for the fade out
 outro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -65,6 +67,12 @@ def create_map():
                 player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
             elif cell == 9:
                 exit = Exit(world_x, world_y)
+            elif cell == 10:
+                collect_item = CollectItem(world_x, world_y, "health", "health")
+                collect_item_group.add(collect_item)
+            elif cell == 11:
+                collect_item = CollectItem(world_x, world_y, "rifle_ammo", "ammo")
+                collect_item_group.add(collect_item)
             
     return exit
 
@@ -103,10 +111,40 @@ class Ground(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
 
+class CollectItem(pygame.sprite.Sprite):
+    def __init__(self, x, y, image, type):
+        super().__init__()
+        self.image = pygame.image.load(f"assets/image/collect_item/{image}.png")
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 - 10, CELL_SIZE // 2))
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y + CELL_SIZE // 2
+        self.rect.center = (self.x, self.y)
+        self.type = type
+    
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+    
+    def draw(self):
+        screen.blit(self.image, self.rect)
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+    
+    def collect(self):
+        if self.type == "health" and player.health < 100:
+            player.health = min(player.health + 20, 100)
+            collect_item_group.remove(self)
+            health_pickup_sound.play()
+        elif self.type == "ammo":
+            BULLET_INFO[player.current_gun]['total'] += 10
+            collect_item_group.remove(self)
+            bullet_pickup_sound.play()
+
+
 # Fade Out Screen Transition
 
 def fade_outro():
-    global fade_alpha
+    global fade_alpha, isDeathSoundPlay
     if fade_alpha < 255:  # Increase opacity over time
         fade_alpha += 2
     outro_surface.set_alpha(fade_alpha)
@@ -114,9 +152,12 @@ def fade_outro():
 
     if fade_alpha >= 255:
         #display game over screen
-        text = font.render("Game Over", True, (255, 255, 255))
+        text = big_font.render("Wasted ", True, (255, 255, 255))
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        restart_text = font.render("Met your fate ? Press R to rise again !", True, (255, 255, 255))
+        restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50))
         screen.blit(text, text_rect)
+        screen.blit(restart_text, restart_rect)
 
 
 def fade_intro():
@@ -127,13 +168,12 @@ def fade_intro():
     screen.blit(intro_surface, (0, 0))
 
 
-
-
 player = Player()
 
 
 def main():
-    global bg_scroll_x, bg_scroll_y
+    global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha
+
     exit = create_map()
     while True:
         for event in pygame.event.get():
@@ -144,7 +184,7 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-                if event.key == pygame.K_r:
+                if event.key == pygame.K_r and player.alive:
                     player.reload()
                     
                     
@@ -160,6 +200,13 @@ def main():
         bg_scroll_y += y        
         player.update()
         player.draw(screen)
+
+        # Update and draw the collect items
+        for collect_item in collect_item_group:
+            collect_item.update()
+            collect_item.draw()
+            if player.rect.colliderect(collect_item.rect):
+                collect_item.collect()
 
 
         # Update and draw the bullets
@@ -186,12 +233,12 @@ def main():
         current_ammo = BULLET_INFO[player.current_gun]['remaining'] if BULLET_INFO[player.current_gun]['remaining'] > 0 else "No Ammo"
         text = font.render(f"{current_ammo}", True, (255, 255, 255))
         screen.blit(text, (40, 50))
-        screen.blit(bullet_icon, (15, 45))
+        screen.blit(bullet_icon, (15, 52))
 
         remaining_ammo = BULLET_INFO[player.current_gun]['total'] if BULLET_INFO[player.current_gun]['total'] > 0 else "No Ammo"
-        text = font.render(f"Remain: {remaining_ammo}", True, (255, 255, 255))
+        text = font.render(f"{remaining_ammo}", True, (255, 255, 255))
         screen.blit(text, (40, 90))
-        screen.blit(remaining_bullet_icon, (10, 85))
+        screen.blit(remaining_bullet_icon, (10, 92))
                         
         # player health
         player.health_bar.width = player.health_ratio * player.health
@@ -204,8 +251,30 @@ def main():
         
         if not player.alive:
             fade_outro()
+            if not isDeathSoundPlay:
+                # fade out the background music
+                pygame.mixer.Sound.stop(bg_music)
+                isDeathSoundPlay = True
+                pygame.mixer.Sound("assets/sfx/death.mp3").play()
+
         else:
             fade_intro()
+        
+        if not player.alive:
+            # Look for the R key to restart the game
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_r]:
+                fade_alpha = 0
+                isDeathSoundPlay = False
+                bg_music.play(-1)
+                # Reset the game
+                enemy_group.empty()
+                collect_item_group.empty()
+                ground_group.empty()
+                bullet_group.empty()
+                player.alive = True
+                player.health = 100
+                exit = create_map()
 
 
         # Update the display
