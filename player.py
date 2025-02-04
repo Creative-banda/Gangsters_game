@@ -42,6 +42,7 @@ class Player(pygame.sprite.Sprite):
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
         self.health_bar = pygame.Rect(40, 10, self.health_bar_length, 20)
+        self.has_key = False
         
 
         

@@ -21,6 +21,11 @@ CELL_SIZE = 70
 NEON_BLUE = (0, 255, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+NEON_CYAN = (0, 255, 255)
+NEON_PINK = (255, 105, 180)
+NEON_YELLOW = (255, 255, 0)
 
 # Achievement variables
 achievement_text = ""
@@ -47,6 +52,7 @@ heart_image = pygame.image.load("assets/icons/heart.png").convert_alpha()
 bullet_icon = pygame.image.load("assets/icons/bullet.png").convert_alpha()
 remaining_bullet_icon = pygame.image.load("assets/icons/remaining_bullet.png").convert_alpha()
 remaining_bullet_icon = pygame.transform.scale(remaining_bullet_icon, (25,25))
+key_image = pygame.image.load("assets/image/collect_item/key.png").convert_alpha()
 
 # sound effects
 
@@ -55,8 +61,10 @@ bg_music = pygame.mixer.Sound("assets/sfx/bg_music.mp3")
 reload_sound = pygame.mixer.Sound("assets/sfx/reload.mp3")
 empty_mag_sound = pygame.mixer.Sound("assets/sfx/empty_gun.mp3")
 health_pickup_sound = pygame.mixer.Sound("assets/sfx/health_pickup.mp3")
-bullet_pickup_sound = pygame.mixer.Sound("assets/sfx/bullet_pickup.mp3")    
-
+bullet_pickup_sound = pygame.mixer.Sound("assets/sfx/bullet_pickup.mp3")   
+jumper_sound = pygame.mixer.Sound("assets/sfx/jumper.mp3")
+select_sound = pygame.mixer.Sound("assets/sfx/select.mp3")
+starting_sound = pygame.mixer.Sound("assets/sfx/starting_music.mp3")
 
 
 
