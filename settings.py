@@ -24,7 +24,9 @@ ground_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 collect_item_group = pygame.sprite.Group()
-
+jumper_group = pygame.sprite.Group()
+exit_group = pygame.sprite.Group()
+grass_group = pygame.sprite.Group()
 
 # images
 

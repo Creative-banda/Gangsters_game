@@ -39,7 +39,6 @@ fade_alpha = 255
 def create_map():
     global CELL_SIZE, background_image, bg_images
     
-    exit = None
     # Load the level 1 as json file 
     with open("assets/level_1.json") as file:
         maze_layout = json.load(file)
@@ -57,30 +56,40 @@ def create_map():
             world_x = x * CELL_SIZE
             world_y = y * CELL_SIZE
             
-            if cell > 0 and cell <= 6:  # Ground
-                ground = Ground(world_x, world_y, cell)
-                ground_group.add(ground)
-            elif cell == 7:  # Enemy
+            if cell > 0 and cell <= 45:  # Ground
+                if cell >=5 and cell <= 8 or cell == 35:
+                    grass = Grass(world_x, world_y, cell)
+                    grass_group.add(grass)
+                else:
+                    ground = Ground(world_x, world_y, cell)
+                    ground_group.add(ground)
+            elif cell == 46:  # Enemy
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2)
                 enemy_group.add(enemy)
-            elif cell == 8:  # Player
-                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
-            elif cell == 9:
-                exit = Exit(world_x, world_y)
-            elif cell == 10:
+            elif cell == 48:
                 collect_item = CollectItem(world_x, world_y, "health", "health")
                 collect_item_group.add(collect_item)
-            elif cell == 11:
+            elif cell == 49:
+                collect_item = CollectItem(world_x, world_y, "key", "key")
+                collect_item_group.add(collect_item)
+            elif cell == 50:
                 collect_item = CollectItem(world_x, world_y, "rifle_ammo", "ammo")
                 collect_item_group.add(collect_item)
+            elif cell == 51:
+                exit = Exit(world_x, world_y)
+                exit_group.add(exit)
+            elif cell == 52:  # Player
+                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
+            elif cell == 53:
+                jumper = Jumper(world_x, world_y)
+                jumper_group.add(jumper)
             
-    return exit
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("assets/image/map/exit.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE * 2))
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -96,11 +105,29 @@ class Exit(pygame.sprite.Sprite):
 class Ground(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         super().__init__()
-        self.image = pygame.image.load(f"assets/image/map/{image}.png")
+        self.image = pygame.image.load(f"assets/image/new_map/Tile_{image}.png")
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
+        self.rect.center = (self.x, self.y)
+    
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+    
+    def draw(self):
+        screen.blit(self.image, self.rect)
+
+
+class Grass(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__()
+        self.image = pygame.image.load(f"assets/image/new_map/Tile_{image}.png")
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2, CELL_SIZE // 2))
+        self.rect = self.image.get_rect()
+        self.x = x + CELL_SIZE // 2
+        self.y = y + CELL_SIZE // 2 
         self.rect.center = (self.x, self.y)
     
     def update(self):
@@ -141,6 +168,31 @@ class CollectItem(pygame.sprite.Sprite):
             bullet_pickup_sound.play()
 
 
+class Jumper(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load("assets/image/map/jumper.png")
+        self.image = pygame.transform.scale(self.image, (20,20))
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y + CELL_SIZE // 2 + 15
+        self.rect.center = (self.x, self.y)
+
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y =self.y - bg_scroll_y
+    
+
+    def checkCollision(self, player):
+        if self.rect.colliderect(player.rect):
+            player.inAir = True
+            player.vel_y = -22
+            player.update_animation("Jump")
+
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
 # Fade Out Screen Transition
 
 def fade_outro():
@@ -171,10 +223,11 @@ def fade_intro():
 player = Player()
 
 
-def main():
-    global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha
 
-    exit = create_map()
+def main():
+    global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player
+
+    create_map()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -207,7 +260,16 @@ def main():
             collect_item.draw()
             if player.rect.colliderect(collect_item.rect):
                 collect_item.collect()
+        
+        # Update and draw the jumper
+        for jumper in jumper_group:
+            jumper.update()
+            jumper.checkCollision(player)
+            jumper.draw(screen)
 
+        for grass in grass_group:
+            grass.update()
+            grass.draw()
 
         # Update and draw the bullets
         bullet_group.update(ground_group, enemy_group, player)
@@ -219,8 +281,9 @@ def main():
             ground.draw()
         
         # Update and draw the exit
-        exit.update()
-        exit.draw()
+        for exit in exit_group:
+            exit.update()
+            exit.draw()
         
 
         # Update and draw the enemy
@@ -255,26 +318,31 @@ def main():
                 # fade out the background music
                 pygame.mixer.Sound.stop(bg_music)
                 isDeathSoundPlay = True
-                pygame.mixer.Sound("assets/sfx/death.mp3").play()
-
-        else:
-            fade_intro()
-        
-        if not player.alive:
+                pygame.mixer.Sound("assets/sfx/death.mp3").play()      
             # Look for the R key to restart the game
             keys = pygame.key.get_pressed()
             if keys[pygame.K_r]:
                 fade_alpha = 0
                 isDeathSoundPlay = False
                 bg_music.play(-1)
-                # Reset the game
+                bg_scroll_x = 0
+                bg_scroll_y = 0
+                
+                # Reset Sprite Groups
+                bullet_group.empty()
+                ground_group.empty()
                 enemy_group.empty()
                 collect_item_group.empty()
-                ground_group.empty()
-                bullet_group.empty()
-                player.alive = True
-                player.health = 100
-                exit = create_map()
+                collect_item_group.empty()
+                jumper_group.empty()
+                exit_group.empty()
+                grass_group.empty()
+                
+                # Reset the game
+                player = Player()
+                create_map()
+        else:
+            fade_intro()
 
 
         # Update the display

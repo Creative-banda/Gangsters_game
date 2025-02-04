@@ -4,6 +4,8 @@ from settings import *
 
 jump_sounds = ["jump","jump_2"]
 
+reload_channel = pygame.mixer.Channel(2) 
+
 class Player(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -77,6 +79,9 @@ class Player(pygame.sprite.Sprite):
         screen_dy = 0
         keys = pygame.key.get_pressed()
         new_action = None
+        
+        if not reload_channel.get_busy():
+            self.isReloading = False
 
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
@@ -222,7 +227,8 @@ class Player(pygame.sprite.Sprite):
             return
         self.isReloading = True
         self.update_animation("Reload")
-        reload_sound.play()
+        reload_channel.play(reload_sound)
+
         
         # decreasing the total bullets by the remaining bullets
         bullet_got_shooted = BULLET_INFO[self.current_gun]["mag_size"] - BULLET_INFO[self.current_gun]["remaining"]
