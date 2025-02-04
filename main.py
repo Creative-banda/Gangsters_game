@@ -85,6 +85,30 @@ def create_map():
                 jumper_group.add(jumper)
             
 
+def show_achievement(text, duration=1000):
+    """Displays an achievement message at the top of the screen."""
+    global achievement_text, achievement_alpha, achievement_timer
+    achievement_text = text
+    achievement_alpha = 255  # Fully visible
+    achievement_timer = pygame.time.get_ticks() + duration
+
+def draw_achievement():
+    """Renders the achievement text with fade effect."""
+    global achievement_alpha, achievement_text
+    if achievement_text:
+        if pygame.time.get_ticks() > achievement_timer:
+            achievement_alpha -= 5  # Gradual fade-out
+            if achievement_alpha <= 0:
+                achievement_text = ""
+
+        # Render text
+        if achievement_text:
+            text_surface = font.render(achievement_text, True, NEON_BLUE)
+            text_surface.set_alpha(achievement_alpha)  # Apply fade effect
+            screen.blit(text_surface, (SCREEN_WIDTH // 2 - text_surface.get_width() // 2, 50))
+
+
+
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -162,10 +186,12 @@ class CollectItem(pygame.sprite.Sprite):
             player.health = min(player.health + 20, 100)
             collect_item_group.remove(self)
             health_pickup_sound.play()
+            show_achievement("Health +20")
         elif self.type == "ammo":
             BULLET_INFO[player.current_gun]['total'] += 10
             collect_item_group.remove(self)
             bullet_pickup_sound.play()
+            show_achievement("Ammo +10")
 
 
 class Jumper(pygame.sprite.Sprite):
@@ -244,6 +270,9 @@ def main():
         # Draw the background
         screen.fill((119,120,121))
         
+        # Draw the achievement text
+        draw_achievement()
+        
         # Draw the background image
         screen.blit(background_image, (0 -bg_scroll_x, 0 - bg_scroll_y))
         
@@ -291,6 +320,11 @@ def main():
             enemy.update()
             enemy.move(player, ground_group)
             enemy.draw(screen, bg_scroll_x, bg_scroll_y)
+        
+        if bg_scroll_y > 1800:
+            player.alive = False
+            player.health = 0
+            
         
         # Display HUD        
         current_ammo = BULLET_INFO[player.current_gun]['remaining'] if BULLET_INFO[player.current_gun]['remaining'] > 0 else "No Ammo"

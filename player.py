@@ -141,6 +141,8 @@ class Player(pygame.sprite.Sprite):
         # Apply gravity
         self.vel_y += 0.5
         dy = self.vel_y
+        
+        
 
         # Handle horizontal movement and collisions
         new_x = self.rect.x + dx

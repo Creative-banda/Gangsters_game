@@ -17,6 +17,16 @@ SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 CELL_SIZE = 70
 
+# Colors
+NEON_BLUE = (0, 255, 255)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Achievement variables
+achievement_text = ""
+achievement_alpha = 0  # Transparency (0 = invisible, 255 = fully visible)
+achievement_timer = 0
+
 
 # All Sprite
 bullet_group = pygame.sprite.Group()
