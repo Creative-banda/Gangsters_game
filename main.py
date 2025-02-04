@@ -88,7 +88,7 @@ def create_map():
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load("assets/image/map/exit.png")
+        self.image = pygame.image.load("assets/image/new_map/exit.png")
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.rect = self.image.get_rect()
         self.x = x
@@ -171,7 +171,7 @@ class CollectItem(pygame.sprite.Sprite):
 class Jumper(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load("assets/image/map/jumper.png")
+        self.image = pygame.image.load("assets/image/new_map/jumper.png")
         self.image = pygame.transform.scale(self.image, (20,20))
         self.rect = self.image.get_rect()
         self.x = x
