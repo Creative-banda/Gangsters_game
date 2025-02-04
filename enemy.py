@@ -4,6 +4,7 @@ from player import Bullet, bullet_group
 
 
 class Enemy(pygame.sprite.Sprite):
+    
     def __init__(self, x, y):
         super().__init__()
         self.animations = {}
@@ -39,7 +40,8 @@ class Enemy(pygame.sprite.Sprite):
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
         self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5)
-        
+
+
     def take_damage(self):
         if not self.isHurt:  # Only trigger hurt if not already hurt
             self.isHurt = True
@@ -71,6 +73,7 @@ class Enemy(pygame.sprite.Sprite):
             self.last_bullet_time = pygame.time.get_ticks()
             pygame.mixer.Sound("assets/sfx/pistol.mp3").play()
     
+
     def load_animations(self):
         """Load animations from the defined data."""
         for action, data in ENEMY_ANIMATION.items():
@@ -93,7 +96,8 @@ class Enemy(pygame.sprite.Sprite):
                 frames.append(frame)
 
             self.animations[action] = frames
-            
+
+
     def update(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_update_time > ENEMY_ANIMATION[self.current_action]["animation_cooldown"]:
@@ -163,16 +167,15 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y += dy
 
         self.ai(player, dx, dy)    
-            
-        
-        
-    
+      
+
     def update_animation(self, new_action):
         if new_action != self.current_action:
             self.current_action = new_action
             self.frame_index = 0
             self.last_update_time = pygame.time.get_ticks()
-            
+
+
     def draw(self, screen, bg_scroll_x, bg_scroll_y):
         self.rect.x = self.x - bg_scroll_x
         self.rect.y = self.y - bg_scroll_y
@@ -189,6 +192,7 @@ class Enemy(pygame.sprite.Sprite):
         
         # Draw health bar
         pygame.draw.rect(screen, (255, 0, 0), self.health_bar)
+
 
     def ai(self, player, dx, dy):
         if self.isHurt:  # Don't perform AI actions if hurt

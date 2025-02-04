@@ -65,6 +65,7 @@ bullet_pickup_sound = pygame.mixer.Sound("assets/sfx/bullet_pickup.mp3")
 jumper_sound = pygame.mixer.Sound("assets/sfx/jumper.mp3")
 select_sound = pygame.mixer.Sound("assets/sfx/select.mp3")
 starting_sound = pygame.mixer.Sound("assets/sfx/starting_music.mp3")
+death_sound = pygame.mixer.Sound("assets/sfx/death.mp3")
 
 
 
@@ -147,7 +148,7 @@ ENEMY_ANIMATION = {
 BULLET_INFO = {
 "rifle": {
     "total": 30,
-    "remaining": 3,
+    "remaining": 20,
     "mag_size": 20,
     "bullet_damage": 10,
     "bullet_speed": 20

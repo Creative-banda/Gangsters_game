@@ -92,6 +92,7 @@ def show_achievement(text, duration=1000):
     achievement_alpha = 255  # Fully visible
     achievement_timer = pygame.time.get_ticks() + duration
 
+
 def draw_achievement():
     """Renders the achievement text with fade effect."""
     global achievement_alpha, achievement_text
@@ -108,7 +109,6 @@ def draw_achievement():
             screen.blit(text_surface, (SCREEN_WIDTH // 2 - text_surface.get_width() // 2, 50))
 
 
-
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -123,8 +123,14 @@ class Exit(pygame.sprite.Sprite):
         self.rect.x = self.x - bg_scroll_x
         self.rect.y = self.y - bg_scroll_y
     
+    def checkCollision(self, player):
+        if self.rect.colliderect(player.rect) and player.has_key:
+            show_achievement("Level Completed !")
+            player.has_key = False
+    
     def draw(self):
         screen.blit(self.image, self.rect)
+
 
 class Ground(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
@@ -188,7 +194,7 @@ class CollectItem(pygame.sprite.Sprite):
             health_pickup_sound.play()
             show_achievement("Health +20")
         elif self.type == "ammo":
-            BULLET_INFO[player.current_gun]['total'] += 10
+            player.bullet_info[player.current_gun]['total'] += 10
             collect_item_group.remove(self)
             bullet_pickup_sound.play()
             show_achievement("Ammo +10")
@@ -216,9 +222,10 @@ class Jumper(pygame.sprite.Sprite):
 
     def checkCollision(self, player):
         if self.rect.colliderect(player.rect):
-            player.inAir = True
+            player.InAir = True
             player.vel_y = -22
             jumper_sound.play()
+            player.update_animation("Jump")
 
 
     def draw(self, screen):
@@ -227,64 +234,16 @@ class Jumper(pygame.sprite.Sprite):
 
 def DisplayLevel():
     start_alpha = 0
-    flicker_timer = 0
     neon_hue = 0
-    smoke_particles = []
-    clock = pygame.time.Clock()
 
-    # Generate smoke particles
-    for _ in range(30):
-        smoke_particles.append({
-            'pos': [random.randint(0, SCREEN_WIDTH), SCREEN_HEIGHT//2 + 100],
-            'speed': random.uniform(0.3, 0.7),
-            'size': random.randint(10, 30),
-            'alpha': random.randint(50, 150)
-        })
 
     while True:
-        dt = clock.tick(60) / 1000
         screen.fill((10, 10, 15))  # Dark base color
-        
-        # Draw neon grid background
-        grid_color = (30, 30, 40)
-        for x in range(0, SCREEN_WIDTH, 40):
-            pygame.draw.line(screen, grid_color, (x, 0), (x, SCREEN_HEIGHT), 1)
-        for y in range(0, SCREEN_HEIGHT, 40):
-            pygame.draw.line(screen, grid_color, (0, y), (SCREEN_WIDTH, y), 1)
-            
-        # Animated smoke particles
-        for p in smoke_particles:
-            smoke_surface = pygame.Surface((p['size'], p['size']), pygame.SRCALPHA)
-            pygame.draw.circle(smoke_surface, (50, 50, 50, p['alpha']), 
-                             (p['size']//2, p['size']//2), p['size']//2)
-            screen.blit(smoke_surface, (int(p['pos'][0]), int(p['pos'][1])))
-            p['pos'][0] += random.uniform(-0.5, 0.5)
-            p['pos'][1] -= p['speed']
-            if p['pos'][1] < -50:
-                p.update({
-                    'pos': [random.randint(0, SCREEN_WIDTH), SCREEN_HEIGHT + 50],
-                    'speed': random.uniform(0.3, 0.7),
-                    'size': random.randint(10, 30),
-                    'alpha': random.randint(50, 150)
-                })
-
-        # Neon frame decoration
-        pygame.draw.rect(screen, (255, 40, 120), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), 4)
-        pygame.draw.rect(screen, (40, 255, 200), (4, 4, SCREEN_WIDTH-8, SCREEN_HEIGHT-8), 2)
-
+    
         # Level text with neon flicker
-        flicker_timer += dt
-        neon_intensity = 200 + int(55 * abs(math.sin(flicker_timer * 3)))
         level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/street font
-        level_text = level_font.render("CITY GANG", True, (255, 40, 120))
+        level_text = level_font.render("CITY GANG", True, (185, 1, 3))
         
-        # Neon glow effect
-        for i in range(5, 0, -1):
-            glow_text = level_font.render("CITY GANG", True, 
-                                        (255, 40, 120, neon_intensity//i))
-            screen.blit(glow_text, (SCREEN_WIDTH//2 - 180 + random.randint(-1,1), 
-                                   SCREEN_HEIGHT//2 - 120 + random.randint(-1,1)))
-
         screen.blit(level_text, (SCREEN_WIDTH//2 - 180, SCREEN_HEIGHT//2 - 120))
 
         # Animated neon button
@@ -310,7 +269,8 @@ def DisplayLevel():
         screen.blit(start_text, start_rect)
 
         # Grunge texture overlay
-        grunge = pygame.image.load("assets/image/background/grunge.jpg").convert_alpha()
+        grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
+        grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH, SCREEN_HEIGHT))
         grunge.set_alpha(30)
         screen.blit(grunge, (0, 0))
 
@@ -398,8 +358,13 @@ def main():
                     
         # Draw the background
         screen.fill((119,120,121))
-        
 
+        
+        # Update and draw the exit
+        for exit in exit_group:
+            exit.update()
+            exit.draw()
+            exit.checkCollision(player)
         
         # Draw the background image
         screen.blit(background_image, (0 -bg_scroll_x, 0 - bg_scroll_y))
@@ -436,12 +401,6 @@ def main():
         for ground in ground_group:
             ground.update()
             ground.draw()
-        
-        # Update and draw the exit
-        for exit in exit_group:
-            exit.update()
-            exit.draw()
-        
 
         # Update and draw the enemy
         for enemy in enemy_group:
@@ -455,12 +414,12 @@ def main():
             
         
         # Display HUD        
-        current_ammo = BULLET_INFO[player.current_gun]['remaining'] if BULLET_INFO[player.current_gun]['remaining'] > 0 else "No Ammo"
+        current_ammo = player.bullet_info[player.current_gun]['remaining'] if player.bullet_info[player.current_gun]['remaining'] > 0 else "No Ammo"
         text = font.render(f"{current_ammo}", True, WHITE)
         screen.blit(text, (40, 50))
         screen.blit(bullet_icon, (15, 52))
 
-        remaining_ammo = BULLET_INFO[player.current_gun]['total'] if BULLET_INFO[player.current_gun]['total'] > 0 else "No Ammo"
+        remaining_ammo = player.bullet_info[player.current_gun]['total'] if player.bullet_info[player.current_gun]['total'] > 0 else "No Ammo"
         text = font.render(f"{remaining_ammo}", True, WHITE)
         screen.blit(text, (40, 90))
         screen.blit(remaining_bullet_icon, (10, 92))
@@ -486,7 +445,7 @@ def main():
                 # fade out the background music
                 pygame.mixer.Sound.stop(bg_music)
                 isDeathSoundPlay = True
-                pygame.mixer.Sound("assets/sfx/death.mp3").play()      
+                death_sound.play()      
             # Look for the R key to restart the game
             keys = pygame.key.get_pressed()
             if keys[pygame.K_r]:
@@ -495,6 +454,7 @@ def main():
                 bg_music.play(-1)
                 bg_scroll_x = 0
                 bg_scroll_y = 0
+                death_sound.stop()
                 
                 # Reset Sprite Groups
                 bullet_group.empty()
