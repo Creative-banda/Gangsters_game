@@ -24,14 +24,17 @@ class Player(pygame.sprite.Sprite):
         self.isShooting = False
         self.health = 100
         self.alive = True
-        self.current_gun = "rifle"
+        self.current_gun = "laser"
         self.bullet_info = copy.deepcopy(BULLET_INFO) # Copy the gun info to avoid modifying the original dictionary
 
         # Load animations
         self.load_animations()
 
         # Set initial frame and position
-        self.image = self.animations[self.current_action][self.frame_index]
+        try:
+            self.image = self.animations[self.current_action][self.frame_index]
+        except:
+            self.image = self.animations[self.current_action][len(self.animations[self.current_action])-1]
         self.rect = self.image.get_rect()
         self.rect.midbottom = (0, 600)  # Changed from center to midbottom
         self.screen_height = 600  # Add your actual screen height
@@ -246,12 +249,27 @@ class Player(pygame.sprite.Sprite):
     def shoot(self):
         if pygame.time.get_ticks() - self.last_bullet_time < 500 or self.isReloading:
             return
+
         self.isShooting = True
-        bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery, self.direction)
-        bullet_group.add(bullet)
-        bullet_sound.play()
+
+        if self.current_gun == "rifle":
+            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, "rifle")
+            bullet_group.add(bullet)
+            bullet_sound.play()
+
+
+        elif self.current_gun == "laser":
+            for i in range(7):  # Fire 7 bullets in a row
+                offset = i * 15 * self.direction  # Space bullets apart
+                bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction) + offset, 
+                                self.rect.centery, 
+                                self.direction, "laser")
+                bullet_group.add(bullet)
+                laser_sound.play()
+
         self.last_bullet_time = pygame.time.get_ticks()
         self.bullet_info[self.current_gun]["remaining"] -= 1
+
 
     def update_animation(self, new_action):
         if new_action != self.current_action:
@@ -266,19 +284,18 @@ class Player(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
         
 
-        
-
         # display the collision bar
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction):
+    def __init__(self, x, y, direction, type):
         super().__init__()
         self.image = bullet_image
         self.rect = self.image.get_rect()
         self.rect.midbottom = (x, y+5)
         self.direction = direction
+        self.type = type
 
     def update(self, ground_group, enemy_group, player):
         self.check_collision(ground_group, enemy_group, player)
@@ -293,8 +310,10 @@ class Bullet(pygame.sprite.Sprite):
         for enemy in enemy_group:
             if self.rect.colliderect(enemy.rect) and enemy.alive:
                 self.kill()
-                enemy.update_animation("Hurt")
-                enemy.getting_hurt = True
+                if self.type == "rifle":
+                    enemy.health -= 40
+                elif self.type == "laser":
+                    enemy.health -= 100
                 enemy.take_damage()
                 
         if self.rect.colliderect(player.rect):
@@ -304,3 +323,4 @@ class Bullet(pygame.sprite.Sprite):
                 player.alive = False
             else:
                 player.update_animation("Hurt")
+

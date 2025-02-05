@@ -66,6 +66,7 @@ jumper_sound = pygame.mixer.Sound("assets/sfx/jumper.mp3")
 select_sound = pygame.mixer.Sound("assets/sfx/select.mp3")
 starting_sound = pygame.mixer.Sound("assets/sfx/starting_music.mp3")
 death_sound = pygame.mixer.Sound("assets/sfx/death.mp3")
+laser_sound = pygame.mixer.Sound("assets/sfx/laser.mp3")
 
 
 
@@ -153,4 +154,11 @@ BULLET_INFO = {
     "bullet_damage": 10,
     "bullet_speed": 20
 },
+"laser": {
+    "total": 30,
+    "remaining": 20,
+    "mag_size": 20,
+    "bullet_damage": 20,
+    "bullet_speed": 20
+}
 }

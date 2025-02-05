@@ -21,6 +21,9 @@ starting_sound.play(-1)
 
 font = pygame.font.Font('assets/font/Pricedown.otf', 25)
 big_font = pygame.font.Font("assets/font/Pricedown.otf", 50)
+# Level text with neon flicker
+level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/street font
+start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 
 isDeathSoundPlay = False
@@ -232,7 +235,7 @@ class Jumper(pygame.sprite.Sprite):
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
-def DisplayLevel():
+def DisplayLevel(level=1):
     start_alpha = 0
     neon_hue = 0
 
@@ -240,11 +243,14 @@ def DisplayLevel():
     while True:
         screen.fill((10, 10, 15))  # Dark base color
     
-        # Level text with neon flicker
-        level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/street font
+
+
         level_text = level_font.render("CITY GANG", True, (185, 1, 3))
         
         screen.blit(level_text, (SCREEN_WIDTH//2 - 180, SCREEN_HEIGHT//2 - 120))
+        
+        level_text = start_font.render(f"Level {level}", True, (185, 1, 3))
+        screen.blit(level_text, (SCREEN_WIDTH//2 - 50, 30))
 
         # Animated neon button
         button_width = 400
@@ -262,11 +268,11 @@ def DisplayLevel():
         pygame.draw.rect(screen, border_color, button_rect, 3, border_radius=10)
         
         # Button text
-        start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
         start_text = start_font.render("PRESS SPACE TO START", True, 
                                      (200, 230, 255) if start_alpha == 255 else (100, 100, 120))
         start_rect = start_text.get_rect(center=button_rect.center)
         screen.blit(start_text, start_rect)
+        
 
         # Grunge texture overlay
         grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
@@ -290,6 +296,7 @@ def DisplayLevel():
                 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE] and start_alpha >= 255:
+            select_sound.play()
             # Flash effect before transition
             for _ in range(3):
                 flash_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -354,6 +361,15 @@ def main():
                     sys.exit()
                 if event.key == pygame.K_r and player.alive:
                     player.reload()
+                # switch weapons
+                if event.key == pygame.K_1:
+                    player.current_gun = "rifle"
+                    select_sound.play()
+                    show_achievement("Rifle Selected")
+                if event.key == pygame.K_2:
+                    player.current_gun = "laser"
+                    select_sound.play()
+                    show_achievement("Laser Selected")
                     
                     
         # Draw the background

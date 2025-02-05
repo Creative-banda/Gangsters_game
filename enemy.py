@@ -52,7 +52,6 @@ class Enemy(pygame.sprite.Sprite):
             self.idling = False
             
             # update the health bar
-            self.health -= 40
             self.health_bar.width = self.health / self.health_ratio
             if self.health <= 0:
                 self.update_animation("Dead")
@@ -68,7 +67,7 @@ class Enemy(pygame.sprite.Sprite):
             return
         if self.frame_index == 5:
             self.isShooting = True
-            bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery-10, self.direction)
+            bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery-10, self.direction, "rifle")
             bullet_group.add(bullet)
             self.last_bullet_time = pygame.time.get_ticks()
             pygame.mixer.Sound("assets/sfx/pistol.mp3").play()
@@ -120,7 +119,11 @@ class Enemy(pygame.sprite.Sprite):
             if self.frame_index >= len(self.animations[self.current_action]) and self.alive:
                 self.frame_index = 0
 
-        self.image = self.animations[self.current_action][self.frame_index]
+        try:
+            self.image = self.animations[self.current_action][self.frame_index]
+        except:
+            self.frame_index = 0
+            self.image = self.animations[self.current_action][self.frame_index]
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
         
         
