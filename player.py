@@ -10,7 +10,6 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self):
         super().__init__()
-
         self.frame_index = 0
         self.current_action = "Jump"
         self.animations = {}
@@ -24,7 +23,10 @@ class Player(pygame.sprite.Sprite):
         self.isShooting = False
         self.health = 100
         self.alive = True
-        self.current_gun = "laser"
+        self.current_gun = "rifle"
+        self.isRifle = True
+        self.isLaser = False
+        self.isSmg = False
         self.bullet_info = copy.deepcopy(BULLET_INFO) # Copy the gun info to avoid modifying the original dictionary
 
         # Load animations
@@ -247,7 +249,7 @@ class Player(pygame.sprite.Sprite):
             self.bullet_info[self.current_gun]["remaining"] = self.bullet_info[self.current_gun]["mag_size"]
 
     def shoot(self):
-        if pygame.time.get_ticks() - self.last_bullet_time < 500 or self.isReloading:
+        if pygame.time.get_ticks() - self.last_bullet_time < BULLET_INFO[self.current_gun]['cooldown'] or self.isReloading:
             return
 
         self.isShooting = True
@@ -266,6 +268,10 @@ class Player(pygame.sprite.Sprite):
                                 self.direction, "laser")
                 bullet_group.add(bullet)
                 laser_sound.play()
+        elif self.current_gun == "smg":
+            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, "smg")
+            bullet_group.add(bullet)
+            smg_sound.play()
 
         self.last_bullet_time = pygame.time.get_ticks()
         self.bullet_info[self.current_gun]["remaining"] -= 1
@@ -300,8 +306,6 @@ class Bullet(pygame.sprite.Sprite):
     def update(self, ground_group, enemy_group, player):
         self.check_collision(ground_group, enemy_group, player)
         self.rect.x += BULLET_SPEED * self.direction
-        if self.rect.left > 800 or self.rect.right < 0:
-            self.kill()
     
     def check_collision(self, ground_group, enemy_group, player):
         if pygame.sprite.spritecollide(self, ground_group, False):
@@ -310,11 +314,8 @@ class Bullet(pygame.sprite.Sprite):
         for enemy in enemy_group:
             if self.rect.colliderect(enemy.rect) and enemy.alive:
                 self.kill()
-                if self.type == "rifle":
-                    enemy.health -= 40
-                elif self.type == "laser":
-                    enemy.health -= 100
-                enemy.take_damage()
+                enemy.take_damage(self.type)
+                print("Enemy Health :",enemy.health)
                 
         if self.rect.colliderect(player.rect):
             self.kill()
@@ -323,4 +324,7 @@ class Bullet(pygame.sprite.Sprite):
                 player.alive = False
             else:
                 player.update_animation("Hurt")
+        
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
 

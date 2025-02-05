@@ -1,6 +1,6 @@
 import pygame
 import sys
-import json, random, math
+import json
 from player import Player, bullet_group
 from settings import *
 from enemy import Enemy
@@ -76,8 +76,8 @@ def create_map():
                 collect_item = CollectItem(world_x, world_y, "key", "key")
                 collect_item_group.add(collect_item)
             elif cell == 50:
-                collect_item = CollectItem(world_x, world_y, "rifle_ammo", "ammo")
-                collect_item_group.add(collect_item)
+                collect_item = Ammo(world_x, world_y,"laser")
+                ammo_group.add(collect_item)
             elif cell == 51:
                 exit = Exit(world_x, world_y)
                 exit_group.add(exit)
@@ -116,7 +116,7 @@ class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("assets/image/new_map/exit.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2, CELL_SIZE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -196,16 +196,47 @@ class CollectItem(pygame.sprite.Sprite):
             collect_item_group.remove(self)
             health_pickup_sound.play()
             show_achievement("Health +20")
-        elif self.type == "ammo":
-            player.bullet_info[player.current_gun]['total'] += 10
-            collect_item_group.remove(self)
-            bullet_pickup_sound.play()
-            show_achievement("Ammo +10")
         elif self.type == "key":
             player.has_key = True
             health_pickup_sound.play()
             collect_item_group.remove(self)
             show_achievement("Key Collected !")
+
+
+class Ammo(pygame.sprite.Sprite):
+    def __init__(self, x, y, gunammo):
+        super().__init__()
+        self.frame_index = 0
+        self.gunammo = gunammo
+        self.image = pygame.image.load(f"assets/image/collect_item/ammo/{self.gunammo}_{self.frame_index}.png")
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y + CELL_SIZE  // 2
+        self.rect.center = (self.x, self.y)
+        self.animation_cooldown = 100
+        self.last_update_time = pygame.time.get_ticks()
+    
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+        if pygame.time.get_ticks() - self.last_update_time > self.animation_cooldown:
+            self.last_update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+        if self.frame_index >= 4:
+            self.frame_index = 0
+        
+        self.image = pygame.image.load(f"assets/image/collect_item/ammo/{self.gunammo}_{self.frame_index}.png")
+        self.image = pygame.transform.scale(self.image, (30,30))
+    
+    
+    def collect(self):
+        player.bullet_info[self.gunammo]['total'] += 10
+        ammo_group.remove(self)
+        bullet_pickup_sound.play()
+        show_achievement(f"{self.gunammo} Ammo +10")
+    
+    def draw(self):
+        screen.blit(self.image, self.rect)
 
 
 class Jumper(pygame.sprite.Sprite):
@@ -335,9 +366,7 @@ def fade_intro():
     intro_surface.set_alpha(fade_alpha)
     screen.blit(intro_surface, (0, 0))
 
-
 player = Player()
-
 
 
 def main():
@@ -365,11 +394,18 @@ def main():
                 if event.key == pygame.K_1:
                     player.current_gun = "rifle"
                     select_sound.play()
+                    PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     show_achievement("Rifle Selected")
                 if event.key == pygame.K_2:
                     player.current_gun = "laser"
+                    PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     select_sound.play()
                     show_achievement("Laser Selected")
+                if event.key == pygame.K_3:
+                    player.current_gun = "smg"
+                    select_sound.play()
+                    PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
+                    show_achievement("SMG Selected")
                     
                     
         # Draw the background
@@ -410,8 +446,9 @@ def main():
             grass.draw()
 
         # Update and draw the bullets
-        bullet_group.update(ground_group, enemy_group, player)
-        bullet_group.draw(screen)
+        for bullet in bullet_group:
+            bullet.update(ground_group, enemy_group, player)
+            bullet.draw(screen)
 
         # Update and draw the ground
         for ground in ground_group:
@@ -424,6 +461,13 @@ def main():
             enemy.move(player, ground_group)
             enemy.draw(screen, bg_scroll_x, bg_scroll_y)
         
+        # Update and draw the ammo
+        for ammo in ammo_group:
+            ammo.update()
+            ammo.draw()
+            if player.rect.colliderect(ammo.rect):
+                ammo.collect()
+                
         if bg_scroll_y > 1800:
             player.alive = False
             player.health = 0

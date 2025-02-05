@@ -1,5 +1,5 @@
 import pygame, random
-from settings import PLAYER_SIZE, ENEMY_ANIMATION, CELL_SIZE
+from settings import PLAYER_SIZE, NORMAL_ENEMY, CELL_SIZE, BULLET_INFO
 from player import Bullet, bullet_group
 
 
@@ -42,7 +42,7 @@ class Enemy(pygame.sprite.Sprite):
         self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5)
 
 
-    def take_damage(self):
+    def take_damage(self, bullet_type):
         if not self.isHurt:  # Only trigger hurt if not already hurt
             self.isHurt = True
             self.update_animation("Hurt")
@@ -51,14 +51,18 @@ class Enemy(pygame.sprite.Sprite):
             self.isReloading = False
             self.idling = False
             
-            # update the health bar
-            self.health_bar.width = self.health / self.health_ratio
-            if self.health <= 0:
-                self.update_animation("Dead")
-                self.alive = False
-                sound = random.randint(0,3)
-                pygame.mixer.Sound(f"assets/sfx/enemy_die/{sound}.mp3").play()
+            self.health -= BULLET_INFO [bullet_type]['bullet_damage']
+   
             
+        # update the health bar
+        self.health_bar.width = self.health / self.health_ratio
+        if self.health <= 0:
+            self.update_animation("Dead")
+            self.alive = False
+            sound = random.randint(0,3)
+            pygame.mixer.Sound(f"assets/sfx/enemy_die/{sound}.mp3").play()
+                
+                
     
     def shoot(self):
         if self.isHurt:  # Don't shoot if hurt
@@ -75,7 +79,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def load_animations(self):
         """Load animations from the defined data."""
-        for action, data in ENEMY_ANIMATION.items():
+        for action, data in NORMAL_ENEMY.items():
             frames = []
             sprite_sheet = pygame.image.load(data["image_path"]).convert_alpha()
 
@@ -99,7 +103,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_update_time > ENEMY_ANIMATION[self.current_action]["animation_cooldown"]:
+        if current_time - self.last_update_time > NORMAL_ENEMY[self.current_action]["animation_cooldown"]:
             self.last_update_time = current_time
             self.frame_index += 1
 

@@ -42,6 +42,7 @@ collect_item_group = pygame.sprite.Group()
 jumper_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 grass_group = pygame.sprite.Group()
+ammo_group = pygame.sprite.Group()
 
 # images
 
@@ -67,6 +68,7 @@ select_sound = pygame.mixer.Sound("assets/sfx/select.mp3")
 starting_sound = pygame.mixer.Sound("assets/sfx/starting_music.mp3")
 death_sound = pygame.mixer.Sound("assets/sfx/death.mp3")
 laser_sound = pygame.mixer.Sound("assets/sfx/laser.mp3")
+smg_sound = pygame.mixer.Sound("assets/sfx/smg_shot.mp3")
 
 
 
@@ -115,7 +117,7 @@ PLAYER_ANIMATION = {
 },
 }
 
-ENEMY_ANIMATION = {
+NORMAL_ENEMY = {
 "idle": {
     "frame_count": 7,  # Number of frames
     "image_path": "assets/image/enemy/Idle.png",  # Sprite sheet path,
@@ -144,6 +146,35 @@ ENEMY_ANIMATION = {
 },
 }
 
+HEAVY_ENEMY = {
+"idle": {
+    "frame_count": 7,  # Number of frames
+    "image_path": "assets/image/enemy/Idle.png",  # Sprite sheet path,
+    "animation_cooldown": 100
+},
+"Shot": {
+    "frame_count": 4,  # Number of frames
+    "image_path": "assets/image/enemy/Shot.png",  # Sprite sheet path
+    "animation_cooldown": 70
+},
+"Walk": {
+    "frame_count": 8,  # Number of frames
+    "image_path": "assets/image/enemy/Walk.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+"Hurt": {
+    "frame_count": 4,  # Number of frames
+    "image_path": "assets/image/enemy/Hurt.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+
+"Dead": {
+    "frame_count": 5,  # Number of frames
+    "image_path": "assets/image/enemy/Dead.png",  # Sprite sheet path
+    "animation_cooldown": 100
+},
+}
+
 # Player Gun Info
 
 BULLET_INFO = {
@@ -151,14 +182,24 @@ BULLET_INFO = {
     "total": 30,
     "remaining": 20,
     "mag_size": 20,
-    "bullet_damage": 10,
-    "bullet_speed": 20
+    "bullet_damage": 40,
+    "bullet_speed": 20,
+    "cooldown" : 100
 },
 "laser": {
     "total": 30,
     "remaining": 20,
     "mag_size": 20,
-    "bullet_damage": 20,
-    "bullet_speed": 20
+    "bullet_damage": 30,
+    "bullet_speed": 20,
+    "cooldown" : 300
+},
+"smg": {
+    "total": 100,
+    "remaining": 30,
+    "mag_size": 30,
+    "bullet_damage": 10,
+    "bullet_speed": 20,
+    "cooldown" : 5
 }
 }
