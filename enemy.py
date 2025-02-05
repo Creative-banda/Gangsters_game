@@ -51,7 +51,7 @@ class Enemy(pygame.sprite.Sprite):
             self.isReloading = False
             self.idling = False
             
-            self.health -= BULLET_INFO [bullet_type]['bullet_damage']
+        self.health -= BULLET_INFO [bullet_type]['bullet_damage']
    
             
         # update the health bar
