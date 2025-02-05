@@ -86,6 +86,12 @@ def create_map():
             elif cell == 53:
                 jumper = Jumper(world_x, world_y)
                 jumper_group.add(jumper)
+            elif cell == 54:
+                collect_item = Ammo(world_x, world_y,"rifle")
+                ammo_group.add(collect_item)
+            elif cell == 55:
+                collect_item = Ammo(world_x, world_y,"smg")
+                ammo_group.add(collect_item)
             
 
 def show_achievement(text, duration=1000):
@@ -188,7 +194,7 @@ class CollectItem(pygame.sprite.Sprite):
     
     def draw(self):
         screen.blit(self.image, self.rect)
-        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
     
     def collect(self):
         if self.type == "health" and player.health < 100:
@@ -209,9 +215,10 @@ class Ammo(pygame.sprite.Sprite):
         self.frame_index = 0
         self.gunammo = gunammo
         self.image = pygame.image.load(f"assets/image/collect_item/ammo/{self.gunammo}_{self.frame_index}.png")
+        self.image = pygame.transform.scale(self.image, (30,30))
         self.rect = self.image.get_rect()
         self.x = x
-        self.y = y + CELL_SIZE  // 2
+        self.y = y + CELL_SIZE // 2
         self.rect.center = (self.x, self.y)
         self.animation_cooldown = 100
         self.last_update_time = pygame.time.get_ticks()
@@ -237,6 +244,7 @@ class Ammo(pygame.sprite.Sprite):
     
     def draw(self):
         screen.blit(self.image, self.rect)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
 
 class Jumper(pygame.sprite.Sprite):
