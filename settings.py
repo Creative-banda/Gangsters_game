@@ -184,7 +184,7 @@ BULLET_INFO = {
     "mag_size": 20,
     "bullet_damage": 40,
     "bullet_speed": 20,
-    "cooldown" : 100
+    "cooldown" : 200
 },
 "laser": {
     "total": 30,

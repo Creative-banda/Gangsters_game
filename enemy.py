@@ -62,8 +62,7 @@ class Enemy(pygame.sprite.Sprite):
             sound = random.randint(0,3)
             pygame.mixer.Sound(f"assets/sfx/enemy_die/{sound}.mp3").play()
                 
-                
-    
+
     def shoot(self):
         if self.isHurt:  # Don't shoot if hurt
             return
@@ -75,7 +74,7 @@ class Enemy(pygame.sprite.Sprite):
             bullet_group.add(bullet)
             self.last_bullet_time = pygame.time.get_ticks()
             pygame.mixer.Sound("assets/sfx/pistol.mp3").play()
-    
+   
 
     def load_animations(self):
         """Load animations from the defined data."""

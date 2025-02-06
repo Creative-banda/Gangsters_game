@@ -251,6 +251,7 @@ class Player(pygame.sprite.Sprite):
     def shoot(self):
         if pygame.time.get_ticks() - self.last_bullet_time < BULLET_INFO[self.current_gun]['cooldown'] or self.isReloading:
             return
+        print(pygame.time.get_ticks() - self.last_bullet_time)  
 
         self.isShooting = True
 

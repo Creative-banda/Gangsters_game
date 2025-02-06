@@ -26,6 +26,8 @@ level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/stre
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 
+current_level = 0
+
 isDeathSoundPlay = False
 
  # Create a surface for the fade out
@@ -40,14 +42,17 @@ intro_surface.fill((0, 200, 255))  # Neon Cyan
 fade_alpha = 255
 
 def create_map():
-    global CELL_SIZE, background_image, bg_images
+    global CELL_SIZE, background_image, bg_images, bg_scroll_x, bg_scroll_y, current_level
     
     # Load the level 1 as json file 
-    with open("assets/level_1.json") as file:
+    with open(f"assets/level_{current_level}.json") as file:
         maze_layout = json.load(file)
     
     height = len(maze_layout)
     width = len(maze_layout[0])
+    
+    bg_scroll_x = 0
+    bg_scroll_y = 0
 
     # Load the background image
     
@@ -76,22 +81,25 @@ def create_map():
                 collect_item = CollectItem(world_x, world_y, "key", "key")
                 collect_item_group.add(collect_item)
             elif cell == 50:
-                collect_item = Ammo(world_x, world_y,"laser")
+                collect_item = Ammo(world_x, world_y,"rifle")
                 ammo_group.add(collect_item)
             elif cell == 51:
                 exit = Exit(world_x, world_y)
                 exit_group.add(exit)
             elif cell == 52:  # Player
                 player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
-            elif cell == 53:
+            elif cell == 53: 
                 jumper = Jumper(world_x, world_y)
                 jumper_group.add(jumper)
             elif cell == 54:
                 collect_item = Ammo(world_x, world_y,"rifle")
                 ammo_group.add(collect_item)
-            elif cell == 55:
+            elif cell == 58:
                 collect_item = Ammo(world_x, world_y,"smg")
                 ammo_group.add(collect_item)
+            elif cell == 56:
+                collect_item = CollectItem(world_x, world_y,"smg_gun","smg")
+                collect_item_group.add(collect_item)
             
 
 def show_achievement(text, duration=1000):
@@ -134,8 +142,17 @@ class Exit(pygame.sprite.Sprite):
     
     def checkCollision(self, player):
         if self.rect.colliderect(player.rect) and player.has_key:
-            show_achievement("Level Completed !")
             player.has_key = False
+            
+            # Display A Level Complete for few second then move to next level
+            for i in range(150):
+                screen.fill((57, 255, 20))
+                text = big_font.render("LEVEL COMPLETE", True, WHITE)
+                text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+                screen.blit(text, text_rect)
+                pygame.display.flip()
+                clock.tick(60)
+            DisplayLevel()
     
     def draw(self):
         screen.blit(self.image, self.rect)
@@ -194,7 +211,9 @@ class CollectItem(pygame.sprite.Sprite):
     
     def draw(self):
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+        if self.type == "smg" or self.type == "laser":
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE // 2))
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
     
     def collect(self):
         if self.type == "health" and player.health < 100:
@@ -207,7 +226,12 @@ class CollectItem(pygame.sprite.Sprite):
             health_pickup_sound.play()
             collect_item_group.remove(self)
             show_achievement("Key Collected !")
-
+        elif self.type == "smg":
+            player.isSmg = True
+            collect_item_group.remove(self)
+            health_pickup_sound.play()
+            show_achievement("New Weapon SMG Unlocked")
+            
 
 class Ammo(pygame.sprite.Sprite):
     def __init__(self, x, y, gunammo):
@@ -244,7 +268,7 @@ class Ammo(pygame.sprite.Sprite):
     
     def draw(self):
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
 
 class Jumper(pygame.sprite.Sprite):
@@ -274,21 +298,22 @@ class Jumper(pygame.sprite.Sprite):
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
-def DisplayLevel(level=1):
+def DisplayLevel():
+    global current_level
     start_alpha = 0
     neon_hue = 0
+    current_level += 1
+
 
 
     while True:
         screen.fill((10, 10, 15))  # Dark base color
     
-
-
         level_text = level_font.render("CITY GANG", True, (185, 1, 3))
         
         screen.blit(level_text, (SCREEN_WIDTH//2 - 180, SCREEN_HEIGHT//2 - 120))
         
-        level_text = start_font.render(f"Level {level}", True, (185, 1, 3))
+        level_text = start_font.render(f"Level {current_level}", True, (185, 1, 3))
         screen.blit(level_text, (SCREEN_WIDTH//2 - 50, 30))
 
         # Animated neon button
@@ -345,6 +370,16 @@ def DisplayLevel(level=1):
                 pygame.display.update()
                 pygame.time.delay(50)
             starting_sound.stop()
+            bullet_group.empty()
+            ground_group.empty()
+            enemy_group.empty()
+            bullet_group.empty()
+            collect_item_group.empty()
+            jumper_group.empty()
+            exit_group.empty()
+            grass_group.empty()
+            ammo_group.empty()
+            create_map()
             break
 
         pygame.display.update()
@@ -378,7 +413,7 @@ player = Player()
 
 
 def main():
-    global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player
+    global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level    
     
     
     DisplayLevel()
@@ -386,7 +421,6 @@ def main():
     # play background music
     bg_music.play(-1)
 
-    create_map()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -399,17 +433,17 @@ def main():
                 if event.key == pygame.K_r and player.alive:
                     player.reload()
                 # switch weapons
-                if event.key == pygame.K_1:
+                if event.key == pygame.K_1 and player.isRifle:
                     player.current_gun = "rifle"
                     select_sound.play()
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     show_achievement("Rifle Selected")
-                if event.key == pygame.K_2:
+                if event.key == pygame.K_2 and player.isLaser:
                     player.current_gun = "laser"
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     select_sound.play()
                     show_achievement("Laser Selected")
-                if event.key == pygame.K_3:
+                if event.key == pygame.K_3 and player.isSmg:
                     player.current_gun = "smg"
                     select_sound.play()
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
@@ -476,9 +510,9 @@ def main():
             if player.rect.colliderect(ammo.rect):
                 ammo.collect()
                 
-        if bg_scroll_y > 1800:
-            player.alive = False
-            player.health = 0
+        # if bg_scroll_y > 1800:
+        #     player.alive = False
+        #     player.health = 0
             
         
         # Display HUD        
@@ -503,6 +537,12 @@ def main():
         
         # Draw the achievement text
         draw_achievement()
+        
+        
+        # Display FPS in the Screen
+        fps = str(int(clock.get_fps()))
+        fps_text = font.render(f"FPS: {fps}", True, WHITE)
+        screen.blit(fps_text, (SCREEN_WIDTH // 2, 10))
         
         if player.has_key:
             screen.blit(key_image, (10, 130))
