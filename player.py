@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False
-        self.health = 100
+        self.health = 10000
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
@@ -251,7 +251,6 @@ class Player(pygame.sprite.Sprite):
     def shoot(self):
         if pygame.time.get_ticks() - self.last_bullet_time < BULLET_INFO[self.current_gun]['cooldown'] or self.isReloading:
             return
-        print(pygame.time.get_ticks() - self.last_bullet_time)  
 
         self.isShooting = True
 
@@ -300,22 +299,26 @@ class Bullet(pygame.sprite.Sprite):
         super().__init__()
         self.image = bullet_image
         self.rect = self.image.get_rect()
-        self.rect.midbottom = (x, y+5)
+        self.x = x
+        self.y = y
+        self.rect.midbottom = (self.x, self.y+5)
         self.direction = direction
         self.type = type
 
-    def update(self, ground_group, enemy_group, player):
-        self.check_collision(ground_group, enemy_group, player)
+    def update(self):
         self.rect.x += BULLET_SPEED * self.direction
     
-    def check_collision(self, ground_group, enemy_group, player):
+    def check_collision(self, ground_group, enemy_group, player, bg_scroll_x, bg_scroll_y):
         if pygame.sprite.spritecollide(self, ground_group, False):
             self.kill()
         
         for enemy in enemy_group:
-            if self.rect.colliderect(enemy.rect) and enemy.alive:
-                self.kill()
-                enemy.take_damage(self.type)
+            diff_x = abs(enemy.x - bg_scroll_x - player.rect.x)
+            diff_y = abs(enemy.y - bg_scroll_y - player.rect.y)
+            if diff_x < 800 and diff_y < 600:
+                if self.rect.colliderect(enemy.rect) and enemy.alive:
+                    self.kill()
+                    enemy.take_damage(self.type)
                 
         if self.rect.colliderect(player.rect):
             self.kill()

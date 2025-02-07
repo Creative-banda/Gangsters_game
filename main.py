@@ -356,7 +356,7 @@ def DisplayLevel():
     global current_level
     start_alpha = 0
     neon_hue = 0
-    current_level += 1
+    current_level += 2
 
 
 
@@ -427,7 +427,6 @@ def DisplayLevel():
             bullet_group.empty()
             ground_group.empty()
             enemy_group.empty()
-            bullet_group.empty()
             collect_item_group.empty()
             jumper_group.empty()
             exit_group.empty()
@@ -523,6 +522,9 @@ def main():
         bg_scroll_y += y        
         player.update()
         player.draw(screen)
+        
+        player_x = player.rect.x 
+        player_y = player.rect.y 
 
         # Update and draw the collect items
         for collect_item in collect_item_group:
@@ -543,16 +545,26 @@ def main():
 
         # Update and draw the bullets
         for bullet in bullet_group:
-            bullet.update(ground_group, enemy_group, player)
+            bullet.update()
+            bullet.check_collision(ground_group, enemy_group, player, bg_scroll_x, bg_scroll_y)
             bullet.draw(screen)
 
         # Update and draw the ground
         for ground in ground_group:
-            ground.update()
-            ground.draw()
 
+            # diff_x = abs(ground.x - bg_scroll_x - player_x)
+            # diff_y = abs(ground.y - bg_scroll_y - player_y)
+            # print(diff_x, diff_y)
+            ground.update()
+            # if diff_x < 800 and diff_y < 600:
+            ground.draw()
+        # print(player.rect.x + bg_scroll_x, player.rect.y + bg_scroll_y)
         # Update and draw the enemy
         for enemy in enemy_group:
+            # diff_x = abs(enemy.x - bg_scroll_x - player_x)
+            # diff_y = abs(enemy.y - bg_scroll_y - player_y)
+            # # print(diff_x, diff_y)
+            # if diff_x < 800 and diff_y < 600:
             enemy.update()
             enemy.move(player, ground_group)
             enemy.draw(screen, bg_scroll_x, bg_scroll_y)
