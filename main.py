@@ -1,12 +1,12 @@
 import pygame
-import sys
+import sys, time, cv2
 import json
 from player import Player, bullet_group
 from settings import *
 from enemy import Enemy
+import numpy as np
 
-# Initialize Pygame
-pygame.init()
+
 
 pygame.display.set_caption("Gangster Game")
 clock = pygame.time.Clock()
@@ -125,6 +125,60 @@ def draw_achievement():
             text_surface.set_alpha(achievement_alpha)  # Apply fade effect
             screen.blit(text_surface, (SCREEN_WIDTH // 2 - text_surface.get_width() // 2, 50))
 
+
+def show_Intro():
+    running = True
+    # Video settings
+    video_path = "assets/intro_1.mp4"
+    audio_path = "assets/intro.ogg"  
+    video = cv2.VideoCapture(video_path)
+
+    fps = video.get(cv2.CAP_PROP_FPS)  # Keep as float to avoid precision errors
+    frame_time = 1 / fps  # Time per frame
+    try:
+        pygame.mixer.music.load(audio_path)  # Ensure it's in OGG format
+        pygame.mixer.music.play()
+    except pygame.error as e:
+        print(f"Error loading audio: {e}")
+
+
+
+    # Check if video opened correctly
+    if not video.isOpened():
+        print("Error: Could not open video.")
+        exit()
+    while running:
+        start_time = time.time()  # Track time for accurate frame display
+
+        ret, frame = video.read()
+        if not ret:
+            break  # Exit when the video ends
+
+        # Convert OpenCV frame (BGR → RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # mirror the frame
+        frame = np.fliplr(frame)
+        # Convert frame to Pygame surface
+        frame_surface = pygame.surfarray.make_surface(np.rot90(frame))
+
+        # Display the frame
+        screen.blit(frame_surface, (0, 0))
+        pygame.display.update()
+
+        # Check for spacebar to skip video
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                running = False
+
+        # Ensure proper frame rate timing
+        elapsed_time = time.time() - start_time
+        sleep_time = max(0, frame_time - elapsed_time)  # Ensure we maintain the correct FPS
+        time.sleep(sleep_time)
+    pygame.mixer.music.stop()
+    video.release()
+    
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -586,4 +640,5 @@ def main():
         clock.tick(60)
 
 if __name__ == "__main__":
+    show_Intro()
     main()

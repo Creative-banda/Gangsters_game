@@ -25,8 +25,8 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
-        self.isLaser = False
-        self.isSmg = False
+        self.isLaser = True
+        self.isSmg = True
         self.bullet_info = copy.deepcopy(BULLET_INFO) # Copy the gun info to avoid modifying the original dictionary
 
         # Load animations
@@ -316,7 +316,6 @@ class Bullet(pygame.sprite.Sprite):
             if self.rect.colliderect(enemy.rect) and enemy.alive:
                 self.kill()
                 enemy.take_damage(self.type)
-                print("Enemy Health :",enemy.health)
                 
         if self.rect.colliderect(player.rect):
             self.kill()
