@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False
-        self.health = 10000
+        self.health = 100
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
@@ -255,7 +255,7 @@ class Player(pygame.sprite.Sprite):
         self.isShooting = True
 
         if self.current_gun == "rifle":
-            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, "rifle")
+            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 40)
             bullet_group.add(bullet)
             bullet_sound.play()
 
@@ -265,11 +265,11 @@ class Player(pygame.sprite.Sprite):
                 offset = i * 15 * self.direction  # Space bullets apart
                 bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction) + offset, 
                                 self.rect.centery, 
-                                self.direction, "laser")
+                                self.direction, 30)
                 bullet_group.add(bullet)
                 laser_sound.play()
         elif self.current_gun == "smg":
-            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, "smg")
+            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 20)
             bullet_group.add(bullet)
             smg_sound.play()
 
@@ -286,7 +286,6 @@ class Player(pygame.sprite.Sprite):
                 self.isShooting = False
 
     def draw(self, screen):
-        self.image = pygame.transform.scale(self.image, PLAYER_SIZE)
         screen.blit(self.image, self.rect)
         
 
@@ -295,7 +294,7 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction, type):
+    def __init__(self, x, y, direction, damage):
         super().__init__()
         self.image = bullet_image
         self.rect = self.image.get_rect()
@@ -303,10 +302,12 @@ class Bullet(pygame.sprite.Sprite):
         self.y = y
         self.rect.midbottom = (self.x, self.y+5)
         self.direction = direction
-        self.type = type
+        self.damage = damage
 
-    def update(self):
-        self.rect.x += BULLET_SPEED * self.direction
+    def update(self, bg_scroll_x, bg_scroll_y):
+        self.rect.x += BULLET_SPEED * self.direction 
+        self.rect.y -= bg_scroll_y
+        self.rect.x -= bg_scroll_x
     
     def check_collision(self, ground_group, enemy_group, player, bg_scroll_x, bg_scroll_y):
         if pygame.sprite.spritecollide(self, ground_group, False):
@@ -316,13 +317,13 @@ class Bullet(pygame.sprite.Sprite):
             diff_x = abs(enemy.x - bg_scroll_x - player.rect.x)
             diff_y = abs(enemy.y - bg_scroll_y - player.rect.y)
             if diff_x < 800 and diff_y < 600:
-                if self.rect.colliderect(enemy.rect) and enemy.alive:
+                if self.rect.colliderect(enemy.rect) and enemy.health > 0:
                     self.kill()
-                    enemy.take_damage(self.type)
+                    enemy.take_damage(self.damage)
                 
         if self.rect.colliderect(player.rect):
             self.kill()
-            player.health -= 40
+            player.health -= self.damage
             if player.health <= 0:
                 player.alive = False
             else:

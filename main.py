@@ -72,7 +72,7 @@ def create_map():
                     ground = Ground(world_x, world_y, cell)
                     ground_group.add(ground)
             elif cell == 46:  # Enemy
-                enemy = Enemy(world_x, world_y - CELL_SIZE // 2)
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "normal")
                 enemy_group.add(enemy)
             elif cell == 48:
                 collect_item = CollectItem(world_x, world_y, "health", "health")
@@ -94,12 +94,15 @@ def create_map():
             elif cell == 54:
                 collect_item = Ammo(world_x, world_y,"rifle")
                 ammo_group.add(collect_item)
-            elif cell == 58:
-                collect_item = Ammo(world_x, world_y,"smg")
-                ammo_group.add(collect_item)
             elif cell == 56:
                 collect_item = CollectItem(world_x, world_y,"smg_gun","smg")
                 collect_item_group.add(collect_item)
+            elif cell == 58:
+                collect_item = Ammo(world_x, world_y,"smg")
+                ammo_group.add(collect_item)
+            elif cell == 59:  # Enemy
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
+                enemy_group.add(enemy)
             
 
 def show_achievement(text, duration=1000):
@@ -228,6 +231,7 @@ class Ground(pygame.sprite.Sprite):
     
     def draw(self):
         screen.blit(self.image, self.rect)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
 
 class Grass(pygame.sprite.Sprite):
@@ -264,9 +268,9 @@ class CollectItem(pygame.sprite.Sprite):
         self.rect.y = self.y - bg_scroll_y
     
     def draw(self):
-        screen.blit(self.image, self.rect)
         if self.type == "smg" or self.type == "laser":
             self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE // 2))
+        screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
     
     def collect(self):
@@ -356,7 +360,7 @@ def DisplayLevel():
     global current_level
     start_alpha = 0
     neon_hue = 0
-    current_level += 2
+    current_level += 1
 
 
 
@@ -466,11 +470,9 @@ player = Player()
 
 
 def main():
-    global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level    
-    
-    
+    global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
+
     DisplayLevel()
-    
     # play background music
     bg_music.play(-1)
 
@@ -491,16 +493,17 @@ def main():
                     select_sound.play()
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     show_achievement("Rifle Selected")
-                if event.key == pygame.K_2 and player.isLaser:
-                    player.current_gun = "laser"
-                    PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
-                    select_sound.play()
-                    show_achievement("Laser Selected")
-                if event.key == pygame.K_3 and player.isSmg:
+                if event.key == pygame.K_2 and player.isSmg:
                     player.current_gun = "smg"
                     select_sound.play()
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     show_achievement("SMG Selected")
+                if event.key == pygame.K_3 and player.isLaser:
+                    player.current_gun = "laser"
+                    PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
+                    select_sound.play()
+                    show_achievement("Laser Selected")
+                
                     
                     
         # Draw the background
@@ -545,29 +548,27 @@ def main():
 
         # Update and draw the bullets
         for bullet in bullet_group:
-            bullet.update()
+            bullet.update(x, y)
             bullet.check_collision(ground_group, enemy_group, player, bg_scroll_x, bg_scroll_y)
             bullet.draw(screen)
 
         # Update and draw the ground
         for ground in ground_group:
 
-            # diff_x = abs(ground.x - bg_scroll_x - player_x)
-            # diff_y = abs(ground.y - bg_scroll_y - player_y)
-            # print(diff_x, diff_y)
+            diff_x = abs(ground.x - bg_scroll_x - player_x)
+            diff_y = abs(ground.y - bg_scroll_y - player_y)
             ground.update()
-            # if diff_x < 800 and diff_y < 600:
-            ground.draw()
-        # print(player.rect.x + bg_scroll_x, player.rect.y + bg_scroll_y)
+            if diff_x < 800 and diff_y < 600:
+                ground.draw()
         # Update and draw the enemy
         for enemy in enemy_group:
-            # diff_x = abs(enemy.x - bg_scroll_x - player_x)
-            # diff_y = abs(enemy.y - bg_scroll_y - player_y)
+            diff_x = abs(enemy.x - bg_scroll_x - player_x)
+            diff_y = abs(enemy.y - bg_scroll_y - player_y)
             # # print(diff_x, diff_y)
-            # if diff_x < 800 and diff_y < 600:
-            enemy.update()
-            enemy.move(player, ground_group)
-            enemy.draw(screen, bg_scroll_x, bg_scroll_y)
+            if diff_x < 800 and diff_y < 600:
+                enemy.update()
+                enemy.move(player, ground_group)
+                enemy.draw(screen, bg_scroll_x, bg_scroll_y)
         
         # Update and draw the ammo
         for ammo in ammo_group:
@@ -639,9 +640,13 @@ def main():
                 jumper_group.empty()
                 exit_group.empty()
                 grass_group.empty()
+                has_smg = player.isSmg
+                has_laser = player.isLaser
                 
                 # Reset the game
                 player = Player()
+                player.isSmg = has_smg
+                player.isLaser = has_laser
                 create_map()
         else:
             fade_intro()
@@ -649,7 +654,7 @@ def main():
 
         # Update the display
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(FPS)
 
 if __name__ == "__main__":
     show_Intro()

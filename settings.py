@@ -16,6 +16,8 @@ PLAYER_SIZE = (70, 80)  # Target size for each frame
 SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 CELL_SIZE = 70
+ZOOM_VALUE = 1
+FPS = 60
 
 # Colors
 NEON_BLUE = (0, 255, 255)
@@ -77,12 +79,12 @@ PLAYER_ANIMATION = {
 "idle": {
     "frame_count": 6,  # Number of frames
     "image_path": "assets/image/player/Idle.png",  # Sprite sheet path,
-    "animation_cooldown": 100
+    "animation_cooldown": 70
 },
 "Run": {
     "frame_count": 10,  # Number of frames
     "image_path": "assets/image/player/Run.png",  # Sprite sheet path
-    "animation_cooldown": 100
+    "animation_cooldown": 70
 },
 "Shot": {
     "frame_count": 4,  # Number of frames
@@ -149,28 +151,28 @@ NORMAL_ENEMY = {
 HEAVY_ENEMY = {
 "idle": {
     "frame_count": 7,  # Number of frames
-    "image_path": "assets/image/enemy/Idle.png",  # Sprite sheet path,
+    "image_path": "assets/image/enemy2/Idle.png",  # Sprite sheet path,
     "animation_cooldown": 100
 },
 "Shot": {
     "frame_count": 4,  # Number of frames
-    "image_path": "assets/image/enemy/Shot.png",  # Sprite sheet path
-    "animation_cooldown": 70
+    "image_path": "assets/image/enemy2/Shot.png",  # Sprite sheet path
+    "animation_cooldown": 100
 },
 "Walk": {
     "frame_count": 8,  # Number of frames
-    "image_path": "assets/image/enemy/Walk.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy2/Walk.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 "Hurt": {
     "frame_count": 4,  # Number of frames
-    "image_path": "assets/image/enemy/Hurt.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy2/Hurt.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 
 "Dead": {
     "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/enemy/Dead.png",  # Sprite sheet path
+    "image_path": "assets/image/enemy2/Dead.png",  # Sprite sheet path
     "animation_cooldown": 100
 },
 }
@@ -182,7 +184,6 @@ BULLET_INFO = {
     "total": 30,
     "remaining": 20,
     "mag_size": 20,
-    "bullet_damage": 40,
     "bullet_speed": 20,
     "cooldown" : 100
 },
@@ -190,15 +191,13 @@ BULLET_INFO = {
     "total": 30,
     "remaining": 20,
     "mag_size": 20,
-    "bullet_damage": 30,
     "bullet_speed": 20,
-    "cooldown" : 300
+    "cooldown" : 100
 },
 "smg": {
     "total": 100,
     "remaining": 30,
     "mag_size": 30,
-    "bullet_damage": 10,
     "bullet_speed": 20,
     "cooldown" : 5
 }

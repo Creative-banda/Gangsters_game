@@ -1,15 +1,31 @@
 import pygame, random
-from settings import PLAYER_SIZE, NORMAL_ENEMY, CELL_SIZE, BULLET_INFO
+from settings import PLAYER_SIZE, NORMAL_ENEMY, CELL_SIZE, HEAVY_ENEMY
 from player import Bullet, bullet_group
 
 
 class Enemy(pygame.sprite.Sprite):
     
-    def __init__(self, x, y):
+    def __init__(self, x, y, enemy_type):
         super().__init__()
+        
         self.animations = {}
-        self.load_animations()
+
+        if enemy_type == "normal":
+            self.health = 100
+            self.shoot_frame = 5
+            self.bullet_damage = 40
+            self.vision_length = 300
+            self.animation_dict = NORMAL_ENEMY
+        elif enemy_type == "strong":
+            self.health = 200
+            self.shoot_frame = 3
+            self.bullet_damage = 60
+            self.vision_length = 400
+            
+            self.animation_dict = HEAVY_ENEMY
         self.current_action = "idle"
+        self.load_animations()
+
         self.frame_index = 0
         self.last_update_time = pygame.time.get_ticks()
         self.image = self.animations[self.current_action][self.frame_index]
@@ -27,22 +43,23 @@ class Enemy(pygame.sprite.Sprite):
         self.idling = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.speed = 0.7
-        self.alive = True
+    
         
         # Create a rect in front of the enemy as enemy vision
-        self.vision_rect = pygame.Rect(self.x, self.y, 300, 50)
+        self.vision_rect = pygame.Rect(self.x, self.y, self.vision_length, 50)
         self.vision_rect.center = self.rect.center
         
         # Create a health bar in the top of the enemy as health bar
-        self.health = 100
+        
         self.max_health = 100
         self.health_bar_length = 50
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
         self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5)
+        
 
 
-    def take_damage(self, bullet_type):
+    def take_damage(self, damage):
         if not self.isHurt:  # Only trigger hurt if not already hurt
             self.isHurt = True
             self.update_animation("Hurt")
@@ -51,14 +68,14 @@ class Enemy(pygame.sprite.Sprite):
             self.isReloading = False
             self.idling = False
             
-        self.health -= BULLET_INFO [bullet_type]['bullet_damage']
+        self.health -= damage
    
             
         # update the health bar
         self.health_bar.width = self.health / self.health_ratio
         if self.health <= 0:
+            self.isHurt = False
             self.update_animation("Dead")
-            self.alive = False
             sound = random.randint(0,3)
             pygame.mixer.Sound(f"assets/sfx/enemy_die/{sound}.mp3").play()
                 
@@ -68,9 +85,10 @@ class Enemy(pygame.sprite.Sprite):
             return
         if pygame.time.get_ticks() - self.last_bullet_time < 500 or self.isReloading:
             return
-        if self.frame_index == 5:
+        if self.frame_index == self.shoot_frame:
             self.isShooting = True
-            bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction), self.rect.centery-10, self.direction, "rifle")
+            bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction),
+                             self.rect.centery-10, self.direction, self.bullet_damage)
             bullet_group.add(bullet)
             self.last_bullet_time = pygame.time.get_ticks()
             pygame.mixer.Sound("assets/sfx/pistol.mp3").play()
@@ -78,7 +96,9 @@ class Enemy(pygame.sprite.Sprite):
 
     def load_animations(self):
         """Load animations from the defined data."""
-        for action, data in NORMAL_ENEMY.items():
+        data = None
+
+        for action, data in self.animation_dict.items():
             frames = []
             sprite_sheet = pygame.image.load(data["image_path"]).convert_alpha()
 
@@ -102,7 +122,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_update_time > NORMAL_ENEMY[self.current_action]["animation_cooldown"]:
+        if current_time - self.last_update_time > self.animation_dict[self.current_action]["animation_cooldown"]:
             self.last_update_time = current_time
             self.frame_index += 1
 
@@ -115,18 +135,17 @@ class Enemy(pygame.sprite.Sprite):
                 self.update_animation("idle")
             
             elif self.current_action == "Dead" and self.frame_index >= len(self.animations[self.current_action]):
-                self.alive = False
                 self.frame_index = len(self.animations[self.current_action]) - 1
             
             # Loop animation
-            if self.frame_index >= len(self.animations[self.current_action]) and self.alive:
+            if self.frame_index >= len(self.animations[self.current_action]):
                 self.frame_index = 0
 
         try:
             self.image = self.animations[self.current_action][self.frame_index]
         except:
             self.frame_index = 0
-            self.image = self.animations[self.current_action][self.frame_index]
+            self.image = self.animations[self.current_action][self.frame_index] 
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
         
         
@@ -135,13 +154,15 @@ class Enemy(pygame.sprite.Sprite):
             return
                     
         dy = 0
-        self.vel_y += 0.5
+        dx = 0
+        self.vel_y += 0.5 
         dy += self.vel_y
         
-        if self.direction == 1:
-            dx = self.speed
-        else:
-            dx = -self.speed
+        if self.health > 0:
+            if self.direction == 1:
+                dx = self.speed
+            else:
+                dx = -self.speed
 
 
         # Create a temp rect with upcoming values
@@ -170,9 +191,16 @@ class Enemy(pygame.sprite.Sprite):
                 if temp_rect.right > ground.rect.left:
                     dx = 0
 
-        self.rect.y += dy
+        self.ai(player)  
 
-        self.ai(player, dx, dy)    
+        # Update enemy's position
+        self.y += dy
+        self.rect.y = self.y  
+        if not self.isShoting and not self.isReloading and not self.idling:
+            self.x += dx
+        
+        # Update vision rect
+        self.vision_rect.center = self.rect.center
       
 
     def update_animation(self, new_action):
@@ -200,10 +228,9 @@ class Enemy(pygame.sprite.Sprite):
         pygame.draw.rect(screen, (255, 0, 0), self.health_bar)
 
 
-    def ai(self, player, dx, dy):
-        if self.isHurt:  # Don't perform AI actions if hurt
+    def ai(self, player):
+        if self.health <= 0:
             return
-            
         if self.idling == False and random.randint(1, 200) == 1:
             self.update_animation("idle")
             self.idling = True
@@ -229,11 +256,3 @@ class Enemy(pygame.sprite.Sprite):
                 if self.idle_counter <= 0:
                     self.idling = False
 
-        # Update enemy's position
-        self.y += dy
-        self.rect.y = self.y  
-        if not self.isShoting and not self.isReloading and not self.idling:
-            self.x += dx
-        
-        # Update vision rect
-        self.vision_rect.center = self.rect.center
