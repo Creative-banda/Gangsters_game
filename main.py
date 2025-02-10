@@ -26,7 +26,7 @@ level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/stre
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 
-current_level = 0
+current_level = 1
 
 isDeathSoundPlay = False
 
@@ -51,6 +51,9 @@ def create_map():
     if current_level == 3:
         ZOOM_VALUE = 0.5
         player.update_size(ZOOM_VALUE)
+        print("Zoom Value", ZOOM_VALUE)
+        for bullet in bullet_group:
+            bullet.update_size(ZOOM_VALUE)
     
     height = len(maze_layout)
     width = len(maze_layout[0])
@@ -592,20 +595,29 @@ def main():
 
         # Update and draw the collect items
         for collect_item in collect_item_group:
-            collect_item.update()
-            collect_item.draw()
-            if player.rect.colliderect(collect_item.rect):
-                collect_item.collect()
-        
+            diff_x = abs(collect_item.x - bg_scroll_x - player_x)
+            diff_y = abs(collect_item.y - bg_scroll_y - player_y)
+            if diff_x < 800 and diff_y < 600:
+                collect_item.update()
+                collect_item.draw()
+                if player.rect.colliderect(collect_item.rect):
+                    collect_item.collect()
+            
         # Update and draw the jumper
         for jumper in jumper_group:
-            jumper.update()
-            jumper.checkCollision(player)
-            jumper.draw(screen)
+            diff_x = abs(jumper.x - bg_scroll_x - player_x)
+            diff_y = abs(jumper.y - bg_scroll_y - player_y)
+            if diff_x < 800 and diff_y < 600:
+                jumper.update()
+                jumper.checkCollision(player)
+                jumper.draw(screen)
 
         for grass in grass_group:
-            grass.update()
-            grass.draw()
+            diff_x = abs(grass.x - bg_scroll_x - player_x)
+            diff_y = abs(grass.y - bg_scroll_y - player_y)
+            if diff_x < 800 and diff_y < 600:
+                grass.update()
+                grass.draw()
 
         # Update and draw the bullets
         for bullet in bullet_group:
