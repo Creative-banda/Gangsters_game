@@ -9,18 +9,19 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         
         self.animations = {}
+        self.zoom_value = ZOOM_VALUE
 
         if enemy_type == "normal":
             self.health = 100
             self.shoot_frame = 5
             self.bullet_damage = 40
-            self.vision_length = 300 * ZOOM_VALUE
+            self.vision_length = 300 * self.zoom_value
             self.animation_dict =ENEMIES['NORMAL_ENEMY']
         elif enemy_type == "strong":
             self.health = 200
             self.shoot_frame = 3
             self.bullet_damage = 60
-            self.vision_length = 400 * ZOOM_VALUE
+            self.vision_length = 400 * self.zoom_value
             
             self.animation_dict = ENEMIES['HEAVY_ENEMY']
         self.current_action = "idle"
@@ -88,7 +89,7 @@ class Enemy(pygame.sprite.Sprite):
         if self.frame_index == self.shoot_frame:
             self.isShooting = True
             bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction),
-                             self.rect.centery-10, self.direction, self.bullet_damage)
+                             self.rect.centery-10, self.direction, self.bullet_damage, self.zoom_value)
             bullet_group.add(bullet)
             self.last_bullet_time = pygame.time.get_ticks()
             pygame.mixer.Sound("assets/sfx/pistol.mp3").play()
@@ -114,7 +115,7 @@ class Enemy(pygame.sprite.Sprite):
                 frame = sprite_sheet.subsurface(
                     (x, y, frame_width, frame_height)
                 )
-                frame = pygame.transform.scale(frame, tuple(int(dim * ZOOM_VALUE) for dim in PLAYER_SIZE))
+                frame = pygame.transform.scale(frame, tuple(int(dim * self.zoom_value) for dim in PLAYER_SIZE))
                 frames.append(frame)
 
             self.animations[action] = frames

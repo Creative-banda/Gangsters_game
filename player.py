@@ -11,13 +11,14 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.frame_index = 0
+        self.zoom_value = ZOOM_VALUE
         self.current_action = "Jump"
         self.animations = {}
         self.direction = 1  # 1: Right, -1: Left
         self.last_update_time = pygame.time.get_ticks()
         self.InAir = True
         self.vel_y = 0
-        self.speed = 2 * ZOOM_VALUE
+        self.speed = 2 * self.zoom_value
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False
@@ -53,8 +54,7 @@ class Player(pygame.sprite.Sprite):
         # creating a rect for health bar
         self.health_bar = pygame.Rect(40, 10, self.health_bar_length, 20)
         self.has_key = False
-        
-
+    
     def load_animations(self):
         """Load animations from the defined data."""
         for action, data in PLAYER_ANIMATION.items():
@@ -75,7 +75,7 @@ class Player(pygame.sprite.Sprite):
                 frame = sprite_sheet.subsurface(
                     (x, y, frame_width, frame_height)  # Adjust width and height
                 )
-                frame = pygame.transform.scale(frame, tuple(int(dim * ZOOM_VALUE) for dim in PLAYER_SIZE))
+                frame = pygame.transform.scale(frame, tuple(int(dim * self.zoom_value) for dim in PLAYER_SIZE))
                 frames.append(frame)
 
             self.animations[action] = frames
@@ -99,7 +99,7 @@ class Player(pygame.sprite.Sprite):
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
-            self.vel_y = -14 * ZOOM_VALUE
+            self.vel_y = -14 * self.zoom_value
             self.speed = 4
             new_action = "Jump"
 
@@ -127,7 +127,7 @@ class Player(pygame.sprite.Sprite):
             if not self.InAir and not self.isReloading and not self.isShooting and self.alive:
                 if keys[pygame.K_LSHIFT] and self.sprint_value > 0:
                     self.sprint_value -= 1
-                    dx *= 4
+                    dx *= 3
                     new_action = "Run"
                 else:
                     new_action = "Walk"
@@ -160,7 +160,7 @@ class Player(pygame.sprite.Sprite):
             self.update_animation(new_action)
 
         # Apply gravity
-        self.vel_y += 0.5 * ZOOM_VALUE
+        self.vel_y += 0.5 * self.zoom_value
         dy = self.vel_y
         
         
@@ -273,7 +273,7 @@ class Player(pygame.sprite.Sprite):
         self.isShooting = True
 
         if self.current_gun == "rifle":
-            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 40)
+            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 40, self.zoom_value)
             bullet_group.add(bullet)
             bullet_sound.play()
 
@@ -283,11 +283,11 @@ class Player(pygame.sprite.Sprite):
                 offset = i * 15 * self.direction  # Space bullets apart
                 bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction) + offset, 
                                 self.rect.centery, 
-                                self.direction, 30)
+                                self.direction, 30, self.zoom_value)
                 bullet_group.add(bullet)
                 laser_sound.play()
         elif self.current_gun == "smg":
-            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 10)
+            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 10, self.zoom_value)
             bullet_group.add(bullet)
             smg_sound.play()
 
@@ -312,11 +312,18 @@ class Player(pygame.sprite.Sprite):
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
 
 
+    def update_size(self, ZOOM_VALUE):
+        self.zoom_value = ZOOM_VALUE
+        self.load_animations()
+        self.image = self.animations[self.current_action][self.frame_index]
+        self.rect = self.image.get_rect()
+        
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction, damage):
+    def __init__(self, x, y, direction, damage, ZOOM_VALUE):
         super().__init__()
         self.image = bullet_image
-        self.image = pygame.transform.scale(self.image, tuple(int(dim * ZOOM_VALUE) for dim in BULLET_SIZE))
+        self.zoom_value = ZOOM_VALUE
+        self.image = pygame.transform.scale(self.image, tuple(int(dim * self.zoom_value) for dim in BULLET_SIZE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -351,4 +358,4 @@ class Bullet(pygame.sprite.Sprite):
         
     def draw(self, screen):
         screen.blit(self.image, self.rect)
-
+    

@@ -50,6 +50,7 @@ def create_map():
     
     if current_level == 3:
         ZOOM_VALUE = 0.5
+        player.update_size(ZOOM_VALUE)
     
     height = len(maze_layout)
     width = len(maze_layout[0])
@@ -700,5 +701,5 @@ def main():
         clock.tick(FPS)
 
 if __name__ == "__main__":
-    show_Intro()
+    # show_Intro()
     main()
