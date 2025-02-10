@@ -17,6 +17,7 @@ SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 CELL_SIZE = 70
 FPS = 60
+ZOOM_VALUE = 1
 
 
 
@@ -123,63 +124,33 @@ PLAYER_ANIMATION = {
 },
 }
 
-NORMAL_ENEMY = {
-"idle": {
-    "frame_count": 7,  # Number of frames
-    "image_path": "assets/image/enemy/Idle.png",  # Sprite sheet path,
-    "animation_cooldown": 100
-},
-"Shot": {
-    "frame_count": 12,  # Number of frames
-    "image_path": "assets/image/enemy/Shot.png",  # Sprite sheet path
-    "animation_cooldown": 70
-},
-"Walk": {
-    "frame_count": 10,  # Number of frames
-    "image_path": "assets/image/enemy/Walk.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Hurt": {
-    "frame_count": 4,  # Number of frames
-    "image_path": "assets/image/enemy/Hurt.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-
-"Dead": {
-    "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/enemy/Dead.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
+ENEMIES = {
+    "NORMAL_ENEMY": {
+        "idle": {"frame_count": 7, "image_path": "assets/image/enemy/Idle.png", "animation_cooldown": 100},
+        "Shot": {"frame_count": 12, "image_path": "assets/image/enemy/Shot.png", "animation_cooldown": 70},
+        "Walk": {"frame_count": 10, "image_path": "assets/image/enemy/Walk.png", "animation_cooldown": 100},
+        "Hurt": {"frame_count": 4, "image_path": "assets/image/enemy/Hurt.png", "animation_cooldown": 100},
+        "Dead": {"frame_count": 5, "image_path": "assets/image/enemy/Dead.png", "animation_cooldown": 100},
+    },
+    "HEAVY_ENEMY": {
+        "idle": {"frame_count": 7, "image_path": "assets/image/enemy2/Idle.png", "animation_cooldown": 100},
+        "Shot": {"frame_count": 4, "image_path": "assets/image/enemy2/Shot.png", "animation_cooldown": 100},
+        "Walk": {"frame_count": 8, "image_path": "assets/image/enemy2/Walk.png", "animation_cooldown": 100},
+        "Hurt": {"frame_count": 4, "image_path": "assets/image/enemy2/Hurt.png", "animation_cooldown": 100},
+        "Dead": {"frame_count": 5, "image_path": "assets/image/enemy2/Dead.png", "animation_cooldown": 100},
+    },
+    "BOSS_ENEMY": {
+        "idle": {"frame_count": 4, "image_path": "assets/image/boss/idle.png", "animation_cooldown": 120},
+        "attack1": {"frame_count": 6, "image_path": "assets/image/boss/attack1.png", "animation_cooldown": 80},
+        "attack2": {"frame_count": 8, "image_path": "assets/image/boss/attack2.png", "animation_cooldown": 80},
+        "attack3": {"frame_count": 8, "image_path": "assets/image/boss/attack3.png", "animation_cooldown": 80},
+        "walk": {"frame_count": 12, "image_path": "assets/image/boss/walk.png", "animation_cooldown": 110},
+        "jump": {"frame_count": 12, "image_path": "assets/image/boss/jump.png", "animation_cooldown": 110},
+        "hurt": {"frame_count": 2, "image_path": "assets/image/boss/hurt.png", "animation_cooldown": 90},
+        "dead": {"frame_count": 6, "image_path": "assets/image/boss/death.png", "animation_cooldown": 100},
+    }
 }
 
-HEAVY_ENEMY = {
-"idle": {
-    "frame_count": 7,  # Number of frames
-    "image_path": "assets/image/enemy2/Idle.png",  # Sprite sheet path,
-    "animation_cooldown": 100
-},
-"Shot": {
-    "frame_count": 4,  # Number of frames
-    "image_path": "assets/image/enemy2/Shot.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Walk": {
-    "frame_count": 8,  # Number of frames
-    "image_path": "assets/image/enemy2/Walk.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Hurt": {
-    "frame_count": 4,  # Number of frames
-    "image_path": "assets/image/enemy2/Hurt.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-
-"Dead": {
-    "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/enemy2/Dead.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-}
 
 # Player Gun Info
 

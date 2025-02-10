@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.last_update_time = pygame.time.get_ticks()
         self.InAir = True
         self.vel_y = 0
-        self.speed = 2
+        self.speed = 2 * ZOOM_VALUE
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False
@@ -75,7 +75,7 @@ class Player(pygame.sprite.Sprite):
                 frame = sprite_sheet.subsurface(
                     (x, y, frame_width, frame_height)  # Adjust width and height
                 )
-                frame = pygame.transform.scale(frame, PLAYER_SIZE)
+                frame = pygame.transform.scale(frame, tuple(int(dim * ZOOM_VALUE) for dim in PLAYER_SIZE))
                 frames.append(frame)
 
             self.animations[action] = frames
@@ -99,7 +99,7 @@ class Player(pygame.sprite.Sprite):
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
-            self.vel_y = -14
+            self.vel_y = -14 * ZOOM_VALUE
             self.speed = 4
             new_action = "Jump"
 
@@ -127,7 +127,7 @@ class Player(pygame.sprite.Sprite):
             if not self.InAir and not self.isReloading and not self.isShooting and self.alive:
                 if keys[pygame.K_LSHIFT] and self.sprint_value > 0:
                     self.sprint_value -= 1
-                    dx *= 3
+                    dx *= 4
                     new_action = "Run"
                 else:
                     new_action = "Walk"
@@ -160,7 +160,7 @@ class Player(pygame.sprite.Sprite):
             self.update_animation(new_action)
 
         # Apply gravity
-        self.vel_y += 0.5
+        self.vel_y += 0.5 * ZOOM_VALUE
         dy = self.vel_y
         
         
@@ -316,6 +316,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction, damage):
         super().__init__()
         self.image = bullet_image
+        self.image = pygame.transform.scale(self.image, tuple(int(dim * ZOOM_VALUE) for dim in BULLET_SIZE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y

@@ -42,11 +42,14 @@ intro_surface.fill((0, 200, 255))  # Neon Cyan
 fade_alpha = 255
 
 def create_map():
-    global CELL_SIZE, background_image, bg_images, bg_scroll_x, bg_scroll_y, current_level
+    global background_image, bg_images, bg_scroll_x, bg_scroll_y, current_level, ZOOM_VALUE
     
     # Load the level 1 as json file 
     with open(f"assets/level_{current_level}.json") as file:
         maze_layout = json.load(file)
+    
+    if current_level == 3:
+        ZOOM_VALUE = 0.5
     
     height = len(maze_layout)
     width = len(maze_layout[0])
@@ -56,13 +59,13 @@ def create_map():
 
     # Load the background image
     
-    background_image = pygame.transform.scale(background_image, (width * CELL_SIZE, height * CELL_SIZE))
+    background_image = pygame.transform.scale(background_image, (width * CELL_SIZE * ZOOM_VALUE, height * CELL_SIZE * ZOOM_VALUE))
     
     # First create all ground tiles without any offset
     for y, row in enumerate(maze_layout):
         for x, cell in enumerate(row):
-            world_x = x * CELL_SIZE
-            world_y = y * CELL_SIZE
+            world_x = x * CELL_SIZE * ZOOM_VALUE
+            world_y = y * CELL_SIZE * ZOOM_VALUE
             
             if cell > 0 and cell <= 45:  # Ground
                 if cell >=5 and cell <= 8 or cell == 35:
@@ -75,35 +78,36 @@ def create_map():
             elif cell == 46:  # Enemy
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "normal")
                 enemy_group.add(enemy)
+            elif cell == 47:  # Enemy
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
+                enemy_group.add(enemy)
             elif cell == 48:
-                collect_item = CollectItem(world_x, world_y, "health", "health")
+                collect_item = CollectItem(world_x, world_y, "key", "key")
                 collect_item_group.add(collect_item)
             elif cell == 49:
-                collect_item = CollectItem(world_x, world_y, "key", "key")
+                collect_item = CollectItem(world_x, world_y, "health", "health")
                 collect_item_group.add(collect_item)
             elif cell == 50:
                 collect_item = Ammo(world_x, world_y,"rifle")
                 ammo_group.add(collect_item)
             elif cell == 51:
-                exit = Exit(world_x, world_y)
-                exit_group.add(exit)
-            elif cell == 52:  # Player
-                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
-            elif cell == 53: 
-                jumper = Jumper(world_x, world_y)
-                jumper_group.add(jumper)
-            elif cell == 54:
                 collect_item = Ammo(world_x, world_y,"rifle")
                 ammo_group.add(collect_item)
-            elif cell == 56:
+            elif cell == 52:  # Player
+                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
+            elif cell == 54: 
+                jumper = Jumper(world_x, world_y)
+                jumper_group.add(jumper)
+            elif cell == 55:
+                exit = Exit(world_x, world_y)
+                exit_group.add(exit)
+            elif cell == 57:
                 collect_item = CollectItem(world_x, world_y,"smg_gun","smg")
                 collect_item_group.add(collect_item)
-            elif cell == 58:
+            elif cell == 59:
                 collect_item = Ammo(world_x, world_y,"smg")
                 ammo_group.add(collect_item)
-            elif cell == 59:  # Enemy
-                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
-                enemy_group.add(enemy)
+
             
 
 def show_achievement(text, duration=1000):
@@ -188,7 +192,7 @@ class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("assets/image/new_map/exit.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2, CELL_SIZE))
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 * ZOOM_VALUE, CELL_SIZE * ZOOM_VALUE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -220,7 +224,7 @@ class Ground(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         super().__init__()
         self.image = pygame.image.load(f"assets/image/new_map/Tile_{image}.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE * ZOOM_VALUE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -239,10 +243,10 @@ class Grass(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         super().__init__()
         self.image = pygame.image.load(f"assets/image/new_map/Tile_{image}.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2, CELL_SIZE // 2))
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
         self.rect = self.image.get_rect()
-        self.x = x + CELL_SIZE // 2
-        self.y = y + CELL_SIZE // 2 
+        self.x = x + (CELL_SIZE // 2 ) * ZOOM_VALUE
+        self.y = y + (CELL_SIZE // 2 ) * ZOOM_VALUE
         self.rect.center = (self.x, self.y)
     
     def update(self):
@@ -257,7 +261,7 @@ class CollectItem(pygame.sprite.Sprite):
     def __init__(self, x, y, image, type):
         super().__init__()
         self.image = pygame.image.load(f"assets/image/collect_item/{image}.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 - 10, CELL_SIZE // 2))
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 - 10 * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y + CELL_SIZE // 2
@@ -270,7 +274,7 @@ class CollectItem(pygame.sprite.Sprite):
     
     def draw(self):
         if self.type == "smg" or self.type == "laser":
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE // 2))
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
     
@@ -298,7 +302,7 @@ class Ammo(pygame.sprite.Sprite):
         self.frame_index = 0
         self.gunammo = gunammo
         self.image = pygame.image.load(f"assets/image/collect_item/ammo/{self.gunammo}_{self.frame_index}.png")
-        self.image = pygame.transform.scale(self.image, (30,30))
+        self.image = pygame.transform.scale(self.image, (30 * ZOOM_VALUE,30 * ZOOM_VALUE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y + CELL_SIZE // 2
@@ -316,7 +320,7 @@ class Ammo(pygame.sprite.Sprite):
             self.frame_index = 0
         
         self.image = pygame.image.load(f"assets/image/collect_item/ammo/{self.gunammo}_{self.frame_index}.png")
-        self.image = pygame.transform.scale(self.image, (30,30))
+        self.image = pygame.transform.scale(self.image, (30 * ZOOM_VALUE,30 * ZOOM_VALUE))
     
     
     def collect(self):
@@ -334,10 +338,10 @@ class Jumper(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("assets/image/new_map/jumper.png")
-        self.image = pygame.transform.scale(self.image, (20,20))
+        self.image = pygame.transform.scale(self.image, (20 * ZOOM_VALUE,20 * ZOOM_VALUE))
         self.rect = self.image.get_rect()
         self.x = x
-        self.y = y + CELL_SIZE // 2 + 15
+        self.y = y + (CELL_SIZE // 2 + 15) * ZOOM_VALUE
         self.rect.center = (self.x, self.y)
 
     def update(self):
@@ -349,7 +353,7 @@ class Jumper(pygame.sprite.Sprite):
         if self.rect.colliderect(player.rect):
             player.InAir = True
             player.speed = 4
-            player.vel_y = -22
+            player.vel_y = -22 * ZOOM_VALUE
             jumper_sound.play()
             player.update_animation("Jump")
 
@@ -400,7 +404,7 @@ def DisplayLevel():
 
         # Grunge texture overlay
         grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
-        grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH * ZOOM_VALUE, SCREEN_HEIGHT * ZOOM_VALUE))
         grunge.set_alpha(30)
         screen.blit(grunge, (0, 0))
 
@@ -696,5 +700,5 @@ def main():
         clock.tick(FPS)
 
 if __name__ == "__main__":
-    # show_Intro()
+    show_Intro()
     main()

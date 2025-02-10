@@ -1,5 +1,5 @@
 import pygame, random
-from settings import PLAYER_SIZE, NORMAL_ENEMY, CELL_SIZE, HEAVY_ENEMY
+from settings import PLAYER_SIZE, CELL_SIZE, ENEMIES, ZOOM_VALUE
 from player import Bullet, bullet_group
 
 
@@ -14,15 +14,15 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 100
             self.shoot_frame = 5
             self.bullet_damage = 40
-            self.vision_length = 300
-            self.animation_dict = NORMAL_ENEMY
+            self.vision_length = 300 * ZOOM_VALUE
+            self.animation_dict =ENEMIES['NORMAL_ENEMY']
         elif enemy_type == "strong":
             self.health = 200
             self.shoot_frame = 3
             self.bullet_damage = 60
-            self.vision_length = 400
+            self.vision_length = 400 * ZOOM_VALUE
             
-            self.animation_dict = HEAVY_ENEMY
+            self.animation_dict = ENEMIES['HEAVY_ENEMY']
         self.current_action = "idle"
         self.load_animations()
 
@@ -114,7 +114,7 @@ class Enemy(pygame.sprite.Sprite):
                 frame = sprite_sheet.subsurface(
                     (x, y, frame_width, frame_height)
                 )
-                # frame = pygame.transform.scale(frame, PLAYER_SIZE)
+                frame = pygame.transform.scale(frame, tuple(int(dim * ZOOM_VALUE) for dim in PLAYER_SIZE))
                 frames.append(frame)
 
             self.animations[action] = frames
@@ -258,7 +258,6 @@ class Enemy(pygame.sprite.Sprite):
                 self.idle_counter -= 1
                 if self.idle_counter <= 0:
                     self.idling = False
-
 
     def bossAi(self):
         pass
