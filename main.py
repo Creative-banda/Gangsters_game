@@ -71,6 +71,7 @@ def create_map():
                 else:
                     ground = Ground(world_x, world_y, cell)
                     ground_group.add(ground)
+
             elif cell == 46:  # Enemy
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "normal")
                 enemy_group.add(enemy)
@@ -231,7 +232,7 @@ class Ground(pygame.sprite.Sprite):
     
     def draw(self):
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
 
 class Grass(pygame.sprite.Sprite):
@@ -347,6 +348,7 @@ class Jumper(pygame.sprite.Sprite):
     def checkCollision(self, player):
         if self.rect.colliderect(player.rect):
             player.InAir = True
+            player.speed = 4
             player.vel_y = -22
             jumper_sound.play()
             player.update_animation("Jump")
@@ -466,8 +468,65 @@ def fade_intro():
     intro_surface.set_alpha(fade_alpha)
     screen.blit(intro_surface, (0, 0))
 
-player = Player()
 
+def get_color(current_value, max_value):
+    # Change color dynamically (Green → Yellow → Red)
+    if current_value > max_value * 0.7:
+        color = (0, 255, 0)  # Green
+    elif current_value > max_value * 0.3:
+        color = (255, 255, 0)  # Yellow
+    else:
+        color = (255, 0, 0)  # Red
+    return color
+
+
+def display_HUD():
+
+    current_ammo = player.bullet_info[player.current_gun]['remaining'] if player.bullet_info[player.current_gun]['remaining'] > 0 else "No Ammo"
+
+    # get the color of the ammo text
+    color = get_color(player.bullet_info[player.current_gun]['remaining'], player.bullet_info[player.current_gun]['mag_size'])
+
+    text = font.render(f"{current_ammo}", True, color)
+    screen.blit(text, (40, 50))
+    screen.blit(bullet_icon, (15, 52))
+
+    if player.bullet_info[player.current_gun]['total'] > 0 :
+        remaining_ammo = player.bullet_info[player.current_gun]['total'] 
+        col = (0, 255, 255)
+    else :
+        remaining_ammo = "No Ammo"
+        col = (255, 0, 0) 
+    text = font.render(f"{remaining_ammo}", True, col)
+    screen.blit(text, (40, 90))
+    screen.blit(remaining_bullet_icon, (10, 92))
+                    
+    # player health
+    player.health_bar.width = player.health_ratio * player.health
+    
+    # Text for health
+    screen.blit(heart_image, (10, 10))
+    
+    color = get_color(player.health, 100)
+
+    pygame.draw.rect(screen,color, player.health_bar)
+    pygame.draw.rect(screen,  (50, 50, 50), player.health_bar, 2)
+
+    # Display Sprint Bar
+    # Calculate sprint bar width based on sprint_value
+    current_width = (player.sprint_value / 200) * 100
+
+    color = get_color(player.sprint_value, 200)
+
+    # Draw the sprint bar (Background)
+    pygame.draw.rect(screen, (50, 50, 50), (40, 130, 100, 20))  
+    
+    # Draw sprint bar (filled part)
+    pygame.draw.rect(screen, color, (40,130, current_width, 20))
+    screen.blit(running_icon, (10, 130))
+
+    
+player = Player()
 
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
@@ -503,13 +562,10 @@ def main():
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     select_sound.play()
                     show_achievement("Laser Selected")
-                
-                    
-                    
+       
         # Draw the background
         screen.fill((119,120,121))
 
-        
         # Update and draw the exit
         for exit in exit_group:
             exit.update()
@@ -560,6 +616,7 @@ def main():
             ground.update()
             if diff_x < 800 and diff_y < 600:
                 ground.draw()
+        
         # Update and draw the enemy
         for enemy in enemy_group:
             diff_x = abs(enemy.x - bg_scroll_x - player_x)
@@ -582,26 +639,8 @@ def main():
         #     player.health = 0
             
         
-        # Display HUD        
-        current_ammo = player.bullet_info[player.current_gun]['remaining'] if player.bullet_info[player.current_gun]['remaining'] > 0 else "No Ammo"
-        text = font.render(f"{current_ammo}", True, WHITE)
-        screen.blit(text, (40, 50))
-        screen.blit(bullet_icon, (15, 52))
-
-        remaining_ammo = player.bullet_info[player.current_gun]['total'] if player.bullet_info[player.current_gun]['total'] > 0 else "No Ammo"
-        text = font.render(f"{remaining_ammo}", True, WHITE)
-        screen.blit(text, (40, 90))
-        screen.blit(remaining_bullet_icon, (10, 92))
-                        
-        # player health
-        player.health_bar.width = player.health_ratio * player.health
-        
-        # Text for health
-        screen.blit(heart_image, (10, 10))
-        
-        pygame.draw.rect(screen,GREEN, player.health_bar)
-        pygame.draw.rect(screen, RED, player.health_bar, 2)
-        
+        # Display HUD
+        display_HUD()
         # Draw the achievement text
         draw_achievement()
         
@@ -612,7 +651,7 @@ def main():
         screen.blit(fps_text, (SCREEN_WIDTH // 2, 10))
         
         if player.has_key:
-            screen.blit(key_image, (10, 130))
+            screen.blit(key_image, (720, 20))
         
         if not player.alive:
             fade_outro()
@@ -657,5 +696,5 @@ def main():
         clock.tick(FPS)
 
 if __name__ == "__main__":
-    show_Intro()
+    # show_Intro()
     main()

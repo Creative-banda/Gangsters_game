@@ -25,9 +25,12 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
-        self.isLaser = True
-        self.isSmg = True
-        self.bullet_info = copy.deepcopy(BULLET_INFO) # Copy the gun info to avoid modifying the original dictionary
+        self.isLaser = False
+        self.isSmg = False
+        self.sprint_value = 200
+        self.last_sprint_update = pygame.time.get_ticks()
+    
+        self.bullet_info = copy.deepcopy(BULLET_INFO) # Copy the dictionary to avoid modifying the original dictionary
 
         # Load animations
         self.load_animations()
@@ -37,9 +40,10 @@ class Player(pygame.sprite.Sprite):
             self.image = self.animations[self.current_action][self.frame_index]
         except:
             self.image = self.animations[self.current_action][len(self.animations[self.current_action])-1]
+
         self.rect = self.image.get_rect()
         self.rect.midbottom = (0, 600)  # Changed from center to midbottom
-        self.screen_height = 600  # Add your actual screen height
+        self.screen_height = 600  
         self.target_y = self.screen_height - 100   # Position player near bottom
         
         # Create a health bar in the top of the player as health bar
@@ -51,7 +55,6 @@ class Player(pygame.sprite.Sprite):
         self.has_key = False
         
 
-        
     def load_animations(self):
         """Load animations from the defined data."""
         for action, data in PLAYER_ANIMATION.items():
@@ -77,6 +80,7 @@ class Player(pygame.sprite.Sprite):
 
             self.animations[action] = frames
 
+
     def move(self, ground_group):
         if not self.alive:
             self.update_animation("Dead")
@@ -84,6 +88,8 @@ class Player(pygame.sprite.Sprite):
         dy = 0
         screen_dx = 0
         screen_dy = 0
+
+
         keys = pygame.key.get_pressed()
         new_action = None
         
@@ -93,9 +99,10 @@ class Player(pygame.sprite.Sprite):
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
-            self.speed = 4
             self.vel_y = -14
+            self.speed = 4
             new_action = "Jump"
+
 
             # play a random jump sound
             sound = random.choice(jump_sounds)
@@ -118,11 +125,13 @@ class Player(pygame.sprite.Sprite):
                 self.direction = 1
 
             if not self.InAir and not self.isReloading and not self.isShooting and self.alive:
-                if keys[pygame.K_LSHIFT]:
-                    dx *= 2
+                if keys[pygame.K_LSHIFT] and self.sprint_value > 0:
+                    self.sprint_value -= 1
+                    dx *= 3
                     new_action = "Run"
                 else:
                     new_action = "Walk"
+            
 
         # Handle Shooting
         elif keys[pygame.K_SPACE] and not self.isReloading and not self.isShooting and self.alive:
@@ -140,6 +149,11 @@ class Player(pygame.sprite.Sprite):
         elif not self.InAir and not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_SPACE]) and not self.isReloading:
             if not self.current_action == "Hurt":
                 new_action = "idle"
+
+        if not keys[pygame.K_LSHIFT]:
+            if pygame.time.get_ticks() - self.last_sprint_update > 500:
+                    self.sprint_value = min(200, self.sprint_value + 5)
+                    self.last_sprint_update = pygame.time.get_ticks()
 
         # Update animation
         if new_action and self.alive:
@@ -179,6 +193,7 @@ class Player(pygame.sprite.Sprite):
                     self.vel_y = 0
                     dy = ground.rect.top - self.rect.bottom
                     self.InAir = False
+                    self.speed = 2
                 elif dy < 0:  # Moving up
                     self.vel_y = 0
                     dy = 0
@@ -203,6 +218,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.y -= dy
 
         return screen_dx, screen_dy
+
 
     def update(self):
         current_time = pygame.time.get_ticks()
@@ -231,6 +247,7 @@ class Player(pygame.sprite.Sprite):
             self.image = self.animations[self.current_action][len(self.animations[self.current_action])-1]
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
 
+
     def reload(self):
         if self.isReloading or self.bullet_info[self.current_gun]["remaining"] == self.bullet_info[self.current_gun]["mag_size"] or self.bullet_info[self.current_gun]["total"] == 0:
             return
@@ -247,6 +264,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.bullet_info[self.current_gun]["total"] -= (self.bullet_info[self.current_gun]["mag_size"] - self.bullet_info[self.current_gun]["remaining"])
             self.bullet_info[self.current_gun]["remaining"] = self.bullet_info[self.current_gun]["mag_size"]
+
 
     def shoot(self):
         if pygame.time.get_ticks() - self.last_bullet_time < BULLET_INFO[self.current_gun]['cooldown'] or self.isReloading:
@@ -269,7 +287,7 @@ class Player(pygame.sprite.Sprite):
                 bullet_group.add(bullet)
                 laser_sound.play()
         elif self.current_gun == "smg":
-            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 20)
+            bullet = Bullet(self.rect.centerx + (PLAYER_SIZE[1] // 2 * self.direction), self.rect.centery, self.direction, 10)
             bullet_group.add(bullet)
             smg_sound.play()
 
@@ -284,6 +302,7 @@ class Player(pygame.sprite.Sprite):
             self.last_update_time = pygame.time.get_ticks()
             if new_action == "idle":
                 self.isShooting = False
+
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)

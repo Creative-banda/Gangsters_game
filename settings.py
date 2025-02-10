@@ -16,8 +16,9 @@ PLAYER_SIZE = (70, 80)  # Target size for each frame
 SCREEN_THRUST_X = SCREEN_HEIGHT - 200
 SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
 CELL_SIZE = 70
-ZOOM_VALUE = 1
 FPS = 60
+
+
 
 # Colors
 NEON_BLUE = (0, 255, 255)
@@ -55,7 +56,10 @@ heart_image = pygame.image.load("assets/icons/heart.png").convert_alpha()
 bullet_icon = pygame.image.load("assets/icons/bullet.png").convert_alpha()
 remaining_bullet_icon = pygame.image.load("assets/icons/remaining_bullet.png").convert_alpha()
 remaining_bullet_icon = pygame.transform.scale(remaining_bullet_icon, (25,25))
+running_icon = pygame.image.load("assets/icons/running.png").convert_alpha()
+running_icon = pygame.transform.scale(running_icon, (25,25))
 key_image = pygame.image.load("assets/image/collect_item/key.png").convert_alpha()
+key_image = pygame.transform.scale(key_image, (45,35))
 
 # sound effects
 
@@ -192,7 +196,7 @@ BULLET_INFO = {
     "remaining": 20,
     "mag_size": 20,
     "bullet_speed": 20,
-    "cooldown" : 100
+    "cooldown" : 300
 },
 "smg": {
     "total": 100,

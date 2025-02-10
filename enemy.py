@@ -191,7 +191,10 @@ class Enemy(pygame.sprite.Sprite):
                 if temp_rect.right > ground.rect.left:
                     dx = 0
 
-        self.ai(player)  
+        if self.ai == "boss":
+            self.bossAi()
+        else:
+            self.ai(player)  
 
         # Update enemy's position
         self.y += dy
@@ -256,3 +259,6 @@ class Enemy(pygame.sprite.Sprite):
                 if self.idle_counter <= 0:
                     self.idling = False
 
+
+    def bossAi(self):
+        pass
