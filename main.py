@@ -26,7 +26,7 @@ level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/stre
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 
-current_level = 1
+current_level = 2
 
 isDeathSoundPlay = False
 
@@ -51,7 +51,6 @@ def create_map():
     if current_level == 3:
         ZOOM_VALUE = 0.5
         player.update_size(ZOOM_VALUE)
-        print("Zoom Value", ZOOM_VALUE)
         for bullet in bullet_group:
             bullet.update_size(ZOOM_VALUE)
     
@@ -83,7 +82,7 @@ def create_map():
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "normal")
                 enemy_group.add(enemy)
             elif cell == 47:  # Enemy
-                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
                 enemy_group.add(enemy)
             elif cell == 48:
                 collect_item = CollectItem(world_x, world_y, "key", "key")
@@ -200,9 +199,9 @@ class Exit(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
-        self.rect.bottomright = (self.x, self.y - CELL_SIZE)
+        self.rect.center = (self.x, self.y - CELL_SIZE)
     
-    def update(self):
+    def update(self, bg_scroll_x, bg_scroll_y):
         self.rect.x = self.x - bg_scroll_x
         self.rect.y = self.y - bg_scroll_y
     
@@ -364,6 +363,31 @@ class Jumper(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
+
+class Plane(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = plane_image
+        self.image = pygame.transform.scale(self.image, (80 * ZOOM_VALUE, 50 * ZOOM_VALUE))
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.center = (self.x, self.y)
+        self.speed = 2
+        self.isDropped = False
+    
+    def update(self):
+        self.x += self.speed  # Move the plane in the world
+        self.rect.x = self.x - bg_scroll_x  # Apply scrolling adjustment
+        self.rect.y = self.y - bg_scroll_y  # Apply vertical scrolling
+        
+        if self.rect.left > player.rect.x and not self.isDropped:
+            print("Plane Destroyed")
+            self.isDropped = True
+    
+    def draw(self):
+        screen.blit(self.image, self.rect)
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
 
 def DisplayLevel():
@@ -533,6 +557,8 @@ def display_HUD():
     pygame.draw.rect(screen, color, (40,130, current_width, 20))
     screen.blit(running_icon, (10, 130))
 
+
+
     
 player = Player()
 
@@ -574,11 +600,6 @@ def main():
         # Draw the background
         screen.fill((119,120,121))
 
-        # Update and draw the exit
-        for exit in exit_group:
-            exit.update()
-            exit.draw()
-            exit.checkCollision(player)
         
         # Draw the background image
         screen.blit(background_image, (0 -bg_scroll_x, 0 - bg_scroll_y))
@@ -589,9 +610,17 @@ def main():
         bg_scroll_y += y        
         player.update()
         player.draw(screen)
+        # print(bg_scroll_x, bg_scroll_y)
         
         player_x = player.rect.x 
         player_y = player.rect.y 
+        
+        
+        # Update and draw the exit
+        for exit in exit_group:
+            exit.update(bg_scroll_x, bg_scroll_y)
+            exit.checkCollision(player)
+            exit.draw()
 
         # Update and draw the collect items
         for collect_item in collect_item_group:
@@ -641,8 +670,8 @@ def main():
             # # print(diff_x, diff_y)
             if diff_x < 800 and diff_y < 600:
                 enemy.update()
-                enemy.move(player, ground_group)
-                enemy.draw(screen, bg_scroll_x, bg_scroll_y)
+                enemy.move(player, ground_group, bg_scroll_x, bg_scroll_y)
+                enemy.draw(screen)
         
         # Update and draw the ammo
         for ammo in ammo_group:
@@ -654,7 +683,19 @@ def main():
         # if bg_scroll_y > 1800:
         #     player.alive = False
         #     player.health = 0
-            
+        
+        
+        # Spawn Random Plane In Level 3
+        
+        if current_level == 3:
+            if pygame.time.get_ticks() % 5000 == 0:
+                plane = Plane(0, 100)
+                plane_group.add(plane)
+                
+        for plane in plane_group:
+            plane.update()
+            plane.draw()
+        
         
         # Display HUD
         display_HUD()

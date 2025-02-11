@@ -26,7 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
-        self.isLaser = False
+        self.isLaser = True
         self.isSmg = False
         self.sprint_value = 200
         self.last_sprint_update = pygame.time.get_ticks()
@@ -100,7 +100,7 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
             self.vel_y = -14 * self.zoom_value
-            self.speed = 4
+            self.speed = 4 * self.zoom_value
             new_action = "Jump"
 
 

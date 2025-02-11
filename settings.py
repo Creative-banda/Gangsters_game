@@ -47,11 +47,11 @@ jumper_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 grass_group = pygame.sprite.Group()
 ammo_group = pygame.sprite.Group()
+plane_group = pygame.sprite.Group()
 
 # images
 
 bullet_image = pygame.image.load("assets/image/bullets/bullet.png").convert_alpha()
-bullet_image = pygame.transform.scale(bullet_image, BULLET_SIZE)
 background_image = pygame.image.load("assets/image/background/2.png").convert_alpha()
 heart_image = pygame.image.load("assets/icons/heart.png").convert_alpha()
 bullet_icon = pygame.image.load("assets/icons/bullet.png").convert_alpha()
@@ -61,6 +61,7 @@ running_icon = pygame.image.load("assets/icons/running.png").convert_alpha()
 running_icon = pygame.transform.scale(running_icon, (25,25))
 key_image = pygame.image.load("assets/image/collect_item/key.png").convert_alpha()
 key_image = pygame.transform.scale(key_image, (45,35))
+plane_image = pygame.image.load("assets/image/background/plane.png").convert_alpha()
 
 # sound effects
 
@@ -141,13 +142,13 @@ ENEMIES = {
     },
     "BOSS_ENEMY": {
         "idle": {"frame_count": 4, "image_path": "assets/image/boss/idle.png", "animation_cooldown": 120},
-        "attack1": {"frame_count": 6, "image_path": "assets/image/boss/attack1.png", "animation_cooldown": 80},
-        "attack2": {"frame_count": 8, "image_path": "assets/image/boss/attack2.png", "animation_cooldown": 80},
-        "attack3": {"frame_count": 8, "image_path": "assets/image/boss/attack3.png", "animation_cooldown": 80},
-        "walk": {"frame_count": 12, "image_path": "assets/image/boss/walk.png", "animation_cooldown": 110},
+        "Attack1": {"frame_count": 6, "image_path": "assets/image/boss/attack1.png", "animation_cooldown": 80},
+        "Attack2": {"frame_count": 8, "image_path": "assets/image/boss/attack2.png", "animation_cooldown": 80},
+        "Attack3": {"frame_count": 8, "image_path": "assets/image/boss/attack3.png", "animation_cooldown": 80},
+        "Run" : {"frame_count": 6, "image_path": "assets/image/boss/run.png", "animation_cooldown": 100},
         "jump": {"frame_count": 12, "image_path": "assets/image/boss/jump.png", "animation_cooldown": 110},
-        "hurt": {"frame_count": 2, "image_path": "assets/image/boss/hurt.png", "animation_cooldown": 90},
-        "dead": {"frame_count": 6, "image_path": "assets/image/boss/death.png", "animation_cooldown": 100},
+        "Hurt": {"frame_count": 2, "image_path": "assets/image/boss/hurt.png", "animation_cooldown": 90},
+        "Dead": {"frame_count": 6, "image_path": "assets/image/boss/death.png", "animation_cooldown": 100},
     }
 }
 

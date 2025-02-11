@@ -10,6 +10,9 @@ class Enemy(pygame.sprite.Sprite):
         
         self.animations = {}
         self.zoom_value = ZOOM_VALUE
+        self.size = 1
+        
+        self.speed = 0.7
 
         if enemy_type == "normal":
             self.health = 100
@@ -17,13 +20,24 @@ class Enemy(pygame.sprite.Sprite):
             self.bullet_damage = 40
             self.vision_length = 300 * self.zoom_value
             self.animation_dict =ENEMIES['NORMAL_ENEMY']
+            self.type = "normal"
         elif enemy_type == "strong":
             self.health = 200
             self.shoot_frame = 3
             self.bullet_damage = 60
             self.vision_length = 400 * self.zoom_value
+            self.type = "strong"
             
             self.animation_dict = ENEMIES['HEAVY_ENEMY']
+        elif enemy_type == "boss":
+            self.health = 500
+            self.punch_damage = 50
+            self.animation_dict = ENEMIES['BOSS_ENEMY']
+            self.vision_length = 500 * self.zoom_value
+            self.size = 2
+            self.type = "boss"
+            self.speed = 1.5
+            
         self.current_action = "idle"
         self.load_animations()
 
@@ -43,7 +57,6 @@ class Enemy(pygame.sprite.Sprite):
         self.move_counter = 0
         self.idling = False
         self.last_bullet_time = pygame.time.get_ticks()
-        self.speed = 0.7
     
         
         # Create a rect in front of the enemy as enemy vision
@@ -97,28 +110,51 @@ class Enemy(pygame.sprite.Sprite):
 
     def load_animations(self):
         """Load animations from the defined data."""
-        data = None
+        
+        BASE_FRAME_SIZE = 128  # Reference frame size (Normal Enemy)
+        BASE_CUT_TOP = 50
+        BASE_CUT_LEFT = 33
+        BASE_CUT_RIGHT = 25
 
         for action, data in self.animation_dict.items():
             frames = []
             sprite_sheet = pygame.image.load(data["image_path"]).convert_alpha()
 
-            cut_top = 50
-            cut_left = 33
-            cut_right = 25
-            frame_height = 128 - cut_top
-            frame_width = 128 - (cut_left + cut_right)
+            # Get the full image size dynamically
+            sheet_width, sheet_height = sprite_sheet.get_size()
+            
+            # Calculate frame dimensions dynamically
+            frame_count = data["frame_count"]
+            frame_width = sheet_width // frame_count
+            frame_height = sheet_height  # Use full height dynamically
 
-            for frame_index in range(data["frame_count"]):
-                x = (frame_index * 128) + cut_left
+            # Calculate ratio based on base size (128x128)
+            width_ratio = frame_width / BASE_FRAME_SIZE
+            height_ratio = frame_height / BASE_FRAME_SIZE
+
+            # Apply ratio to cut values
+            cut_top = int(BASE_CUT_TOP * height_ratio)
+            cut_left = 0
+            cut_right = int(BASE_CUT_RIGHT * width_ratio)
+
+            # Loop through each frame and extract it
+            for frame_index in range(frame_count):
+                x = (frame_index * frame_width) + cut_left
                 y = cut_top
-                frame = sprite_sheet.subsurface(
-                    (x, y, frame_width, frame_height)
+                cropped_width = frame_width - (cut_left + cut_right)
+                cropped_height = frame_height - cut_top
+
+                frame = sprite_sheet.subsurface((x, y, cropped_width, cropped_height))
+
+                # Scale based on zoom value
+                frame = pygame.transform.scale(
+                    frame, 
+                    (int(cropped_width * self.zoom_value * self.size), int(cropped_height * self.zoom_value * self.size))
                 )
-                frame = pygame.transform.scale(frame, tuple(int(dim * self.zoom_value) for dim in PLAYER_SIZE))
                 frames.append(frame)
 
             self.animations[action] = frames
+
 
 
     def update(self):
@@ -149,63 +185,79 @@ class Enemy(pygame.sprite.Sprite):
             self.image = self.animations[self.current_action][self.frame_index] 
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
         
-        
-    def move(self, player, ground_group):
+    def move(self, player, ground_group, bg_scroll_x, bg_scroll_y):
         if self.isHurt:  # Don't move if hurt
             return
-                    
-        dy = 0
+
+        # Adjust rendering position first
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+        self.vision_rect.y = self.y - bg_scroll_y
+
         dx = 0
-        self.vel_y += 0.5 
-        dy += self.vel_y
-        
-        if self.health > 0:
+        dy = 0
+
+        if self.health > 0:  # Apply movement logic only if alive
+            self.vel_y += 0.5  # Apply gravity
+            dy += self.vel_y
+
+            # Move left or right based on direction
             if self.direction == 1:
                 dx = self.speed
             else:
                 dx = -self.speed
+        else:
+            # If dead, apply gravity but no horizontal movement
+            self.vel_y += 0.5  # Keep applying gravity
+            dy += self.vel_y
+            dx = 0  # Stop moving left or right
 
-
-        # Create a temp rect with upcoming values
+        # Check vertical collisions
         temp_rect = self.rect.copy()
         temp_rect.y += dy
-        # Check vertical collisions
+
         for ground in ground_group:
             if temp_rect.colliderect(ground.rect):
                 if dy > 0:  # Falling down
                     self.vel_y = 0
-                    dy = ground.rect.top - self.rect.bottom
+                    if self.health > 0:  # Only snap to ground if alive
+                        dy = ground.rect.top - self.rect.bottom
+                    else:
+                        dy = 0  # Let the enemy fall naturally
                     self.InAir = False
                 elif dy < 0:  # Moving up
                     self.vel_y = 0
                     dy = 0
-                break
+                break  # Stop checking once collision is handled
 
+        # Only check horizontal collisions if alive
+        if self.health > 0:
+            temp_rect = self.rect.copy()
+            temp_rect.x += dx
 
-        new_x = self.rect.x + dx
-        temp_rect = self.rect.copy()
-        temp_rect.x = new_x
-        
-        # Check horizontal collisions
-        for ground in ground_group:
-            if temp_rect.colliderect(ground.rect):
-                if temp_rect.right > ground.rect.left:
-                    dx = 0
+            for ground in ground_group:
+                if temp_rect.colliderect(ground.rect):
+                    if temp_rect.right > ground.rect.left:
+                        dx = 0
 
-        if self.ai == "boss":
-            self.bossAi()
+        if self.type == "boss":
+            self.bossAi(player)
         else:
-            self.ai(player)  
+            self.ai(player)
 
-        # Update enemy's position
-        self.y += dy
-        self.rect.y = self.y  
-        if not self.isShoting and not self.isReloading and not self.idling:
-            self.x += dx
-        
-        # Update vision rect
+        # Update enemy's actual position (without applying bg_scroll_y)
+        self.y += dy  # Always allow falling
+        self.rect.y = self.y - bg_scroll_y  # Adjust rendering only
+
+        if self.health > 0 and not self.isShoting and not self.isReloading and not self.idling:
+            self.x += dx  # Allow movement only if alive
+
+        # Update rect position
+        self.rect.x = self.x - bg_scroll_x  # Adjust rendering only
         self.vision_rect.center = self.rect.center
-      
+
+        
+
 
     def update_animation(self, new_action):
         if new_action != self.current_action:
@@ -214,13 +266,10 @@ class Enemy(pygame.sprite.Sprite):
             self.last_update_time = pygame.time.get_ticks()
 
 
-    def draw(self, screen, bg_scroll_x, bg_scroll_y):
-        self.rect.x = self.x - bg_scroll_x
-        self.rect.y = self.y - bg_scroll_y
-        self.vision_rect.y = self.y - bg_scroll_y
+    def draw(self, screen):
         screen.blit(self.image, self.rect)
         
-        # pygame.draw.rect(screen, (0,255,0), self.rect, 1)
+        pygame.draw.rect(screen, (0,255,0), self.rect, 1)
         # pygame.draw.rect(screen, (255, 0, 0), self.vision_rect, 1)
 
         # Update health bar position
@@ -260,5 +309,28 @@ class Enemy(pygame.sprite.Sprite):
                 if self.idle_counter <= 0:
                     self.idling = False
 
-    def bossAi(self):
-        pass
+    def bossAi(self, player):
+        if self.health <= 0:
+            return
+        if self.idling == False and random.randint(1, 200) == 1:
+            self.update_animation("idle")
+            self.idling = True
+            self.idle_counter = 100
+            self.dx = 0
+            
+        diff_x = abs(player.rect.x - self.rect.x)
+        
+        if diff_x < 30:
+            self.update_animation(random.choice(["Attack1"]))
+            
+        if self.idling == False:
+            self.update_animation("Run")
+            self.move_counter += 1
+
+            if self.move_counter > CELL_SIZE:
+                self.direction *= -1
+                self.move_counter *= -1
+        else:
+            self.idle_counter -= 1
+            if self.idle_counter <= 0:
+                self.idling = False
