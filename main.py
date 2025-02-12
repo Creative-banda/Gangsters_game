@@ -82,7 +82,7 @@ def create_map():
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "normal")
                 enemy_group.add(enemy)
             elif cell == 47:  # Enemy
-                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
                 enemy_group.add(enemy)
             elif cell == 50:
                 collect_item = CollectItem(world_x, world_y, "key", "key")
@@ -93,8 +93,6 @@ def create_map():
             elif cell == 51:
                 collect_item = Ammo(world_x, world_y,"rifle")
                 ammo_group.add(collect_item)
-            elif cell == 52:  # Player
-                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
             elif cell == 54: 
                 jumper = Jumper(world_x, world_y)
                 jumper_group.add(jumper)
@@ -107,6 +105,13 @@ def create_map():
             elif cell == 59:
                 collect_item = Ammo(world_x, world_y,"smg")
                 ammo_group.add(collect_item)
+            
+            elif cell == 60:  # Player
+                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
+            elif cell == 100:
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
+                enemy_group.add(enemy)
+                
 
             
 
@@ -433,10 +438,10 @@ class Drop(pygame.sprite.Sprite):
 
 
         if "ammo" in random_item[0]:  
-            new_item = Ammo(self.rect.x + (CELL_SIZE * ZOOM_VALUE) // 2 + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE), random_item[1])
+            new_item = Ammo(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE), random_item[1])
             ammo_group.add(new_item)
         else:
-            new_item = CollectItem(self.rect.x + (CELL_SIZE * ZOOM_VALUE) // 2 + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE) , random_item[0], random_item[1])
+            new_item = CollectItem(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE) , random_item[0], random_item[1])
             collect_item_group.add(new_item)
 
         # Remove the drop after transforming

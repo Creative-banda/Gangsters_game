@@ -38,8 +38,9 @@ class Enemy(pygame.sprite.Sprite):
             self.vision_length = 500 * self.zoom_value
             self.size = 2
             self.type = "boss"
-            self.speed = 1.5
+            self.speed = 3
             self.max_health = 10000
+            self.last_punch_time = pygame.time.get_ticks()
             
             
         self.current_action = "idle"
@@ -61,7 +62,9 @@ class Enemy(pygame.sprite.Sprite):
         self.move_counter = 0
         self.idling = False
         self.last_bullet_time = pygame.time.get_ticks()
-    
+        
+        self.last_player_x = x
+        self.attack_index = 0 
         
         # Create a rect in front of the enemy as enemy vision
         self.vision_rect = pygame.Rect(self.x, self.y, self.vision_length, 50)
@@ -103,7 +106,7 @@ class Enemy(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.last_bullet_time < 500 or self.isReloading:
             return
         if self.frame_index == self.shoot_frame:
-            self.isShooting = True
+            self.isShoting = True
             bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction),
                              self.rect.centery-10, self.direction, self.bullet_damage, self.zoom_value)
             bullet_group.add(bullet)
@@ -115,8 +118,7 @@ class Enemy(pygame.sprite.Sprite):
         """Load animations from the defined data."""
         
         BASE_FRAME_SIZE = 128  # Reference frame size (Normal Enemy)
-        BASE_CUT_TOP = 50
-        BASE_CUT_LEFT = 33
+        BASE_CUT_TOP = 20
         BASE_CUT_RIGHT = 25
 
         for action, data in self.animation_dict.items():
@@ -170,7 +172,10 @@ class Enemy(pygame.sprite.Sprite):
                 self.isHurt = False
                 self.update_animation("idle")
             # Handle other animations
-            elif self.current_action == "Shot" and self.frame_index >= len(self.animations[self.current_action]):
+            elif self.current_action  == "Shot" and self.frame_index >= len(self.animations[self.current_action]):
+                self.update_animation("idle")
+            
+            elif self.current_action in ["Attack1", "Attack2", "Attack3"] and self.frame_index >= len(self.animations[self.current_action]):
                 self.update_animation("idle")
             
             elif self.current_action == "Dead" and self.frame_index >= len(self.animations[self.current_action]):
@@ -296,9 +301,7 @@ class Enemy(pygame.sprite.Sprite):
             self.direction = 1 if player.rect.x > self.rect.x else -1
             self.update_animation("Shot")
             self.shoot()
-            self.isShoting = True
         else:
-            self.isShoting = False
             if self.idling == False:
                 self.update_animation("Walk")
                 self.move_counter += 1
@@ -311,28 +314,76 @@ class Enemy(pygame.sprite.Sprite):
                 if self.idle_counter <= 0:
                     self.idling = False
 
+
     def bossAi(self, player):
+        """Boss AI behavior with improved movement and attack logic"""
         if self.health <= 0:
             return
-        if self.idling == False and random.randint(1, 200) == 1:
+
+        # Check if stuck (Hasn't moved in 20 frames)
+        if hasattr(self, "stuck_counter") and self.rect.x == self.prev_x and self.current_action != "idle":
+            self.stuck_counter += 1
+        else:
+            self.stuck_counter = 0
+
+        # If stuck for too long, jump
+        if self.stuck_counter > 20:
+            self.jump()
+            self.stuck_counter = 0  # Reset counter after jumping
+
+        # Store previous position to check if stuck next frame
+        self.prev_x = self.rect.x
+
+        if not self.idling and player.health > 0:
+            self.last_player_x = player.rect.x  # Store last seen position
+            target_x = player.rect.x if random.randint(1, 3) > 1 else self.last_player_x
+
+            # **Distance Check**: If close enough, attack instead of moving
+            distance_to_player = abs(self.rect.x - player.rect.x)
+            if distance_to_player < 100:  # Adjust distance threshold as needed
+                self.rect.x = self.rect.x  # Stop moving
+                self.punch_attack(player)
+            else:
+                # Move toward target when far away
+                if self.rect.x < target_x:
+                    self.rect.x += self.speed
+                    self.direction = 1
+                elif self.rect.x > target_x:
+                    self.rect.x -= self.speed
+                    self.direction = -1
+                self.update_animation("Run")
+
+        # Randomly idle to add variety
+        if self.idling == False and random.randint(1, 400) == 1:
             self.update_animation("idle")
             self.idling = True
-            self.idle_counter = 100
-            self.dx = 0
-            
-        diff_x = abs(player.rect.x - self.rect.x)
-        
-        if diff_x < 30:
-            self.update_animation(random.choice(["Attack1"]))
-            
-        if self.idling == False:
-            self.update_animation("Run")
-            self.move_counter += 1
+            self.idle_counter = 80
 
-            if self.move_counter > CELL_SIZE:
-                self.direction *= -1
-                self.move_counter *= -1
-        else:
+        # Handle idling state
+        if self.idling:
             self.idle_counter -= 1
             if self.idle_counter <= 0:
                 self.idling = False
+
+    def punch_attack(self, player):
+        """Performs a punch attack"""
+        if pygame.time.get_ticks() - self.last_punch_time < 400:
+            return
+        attack_moves = ["Attack1", "Attack2", "Attack3"]
+        self.update_animation(random.choice(attack_moves))
+        self.last_punch_time = pygame.time.get_ticks()
+        if player.rect.colliderect(self.rect) and self.frame_index > 1:
+            player.health -= 30
+            if player.health <= 0:
+                player.alive = False
+            else:
+                player.update_animation("Hurt")
+
+    def jump(self):
+        """Boss jumps when stuck"""
+        if self.vel_y == 0:
+            self.vel_y -= 10
+            self.update_animation("jump")
+            self.rect.x -= 30 * self.direction  # Move slightly to avoid getting stuck
+
+

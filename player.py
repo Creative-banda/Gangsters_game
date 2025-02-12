@@ -100,7 +100,6 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
             self.vel_y = -14 * self.zoom_value
-            self.speed = 4 * self.zoom_value
             new_action = "Jump"
 
 
@@ -127,7 +126,7 @@ class Player(pygame.sprite.Sprite):
             if not self.InAir and not self.isReloading and not self.isShooting and self.alive:
                 if keys[pygame.K_LSHIFT] and self.sprint_value > 0:
                     self.sprint_value -= 1
-                    dx *= 3
+                    dx *= 3 
                     new_action = "Run"
                 else:
                     new_action = "Walk"
@@ -317,6 +316,7 @@ class Player(pygame.sprite.Sprite):
         self.load_animations()
         self.image = self.animations[self.current_action][self.frame_index]
         self.rect = self.image.get_rect()
+       
         
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction, damage, ZOOM_VALUE):

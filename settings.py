@@ -148,7 +148,7 @@ ENEMIES = {
         "Attack2": {"frame_count": 8, "image_path": "assets/image/boss/attack2.png", "animation_cooldown": 80},
         "Attack3": {"frame_count": 8, "image_path": "assets/image/boss/attack3.png", "animation_cooldown": 80},
         "Run" : {"frame_count": 6, "image_path": "assets/image/boss/run.png", "animation_cooldown": 100},
-        "jump": {"frame_count": 12, "image_path": "assets/image/boss/jump.png", "animation_cooldown": 110},
+        "jump": {"frame_count": 6, "image_path": "assets/image/boss/run_attack.png", "animation_cooldown": 100},
         "Hurt": {"frame_count": 2, "image_path": "assets/image/boss/hurt.png", "animation_cooldown": 90},
         "Dead": {"frame_count": 6, "image_path": "assets/image/boss/death.png", "animation_cooldown": 100},
     }
