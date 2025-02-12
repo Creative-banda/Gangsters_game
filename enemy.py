@@ -13,6 +13,8 @@ class Enemy(pygame.sprite.Sprite):
         self.size = 1
         
         self.speed = 0.7
+        
+        self.max_health = 100
 
         if enemy_type == "normal":
             self.health = 100
@@ -30,13 +32,15 @@ class Enemy(pygame.sprite.Sprite):
             
             self.animation_dict = ENEMIES['HEAVY_ENEMY']
         elif enemy_type == "boss":
-            self.health = 500
+            self.health = 10000
             self.punch_damage = 50
             self.animation_dict = ENEMIES['BOSS_ENEMY']
             self.vision_length = 500 * self.zoom_value
             self.size = 2
             self.type = "boss"
             self.speed = 1.5
+            self.max_health = 10000
+            
             
         self.current_action = "idle"
         self.load_animations()
@@ -65,7 +69,6 @@ class Enemy(pygame.sprite.Sprite):
         
         # Create a health bar in the top of the enemy as health bar
         
-        self.max_health = 100
         self.health_bar_length = 50
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
@@ -134,14 +137,13 @@ class Enemy(pygame.sprite.Sprite):
 
             # Apply ratio to cut values
             cut_top = int(BASE_CUT_TOP * height_ratio)
-            cut_left = 0
             cut_right = int(BASE_CUT_RIGHT * width_ratio)
 
             # Loop through each frame and extract it
             for frame_index in range(frame_count):
-                x = (frame_index * frame_width) + cut_left
+                x = (frame_index * frame_width)
                 y = cut_top
-                cropped_width = frame_width - (cut_left + cut_right)
+                cropped_width = frame_width - (cut_right)
                 cropped_height = frame_height - cut_top
 
                 frame = sprite_sheet.subsurface((x, y, cropped_width, cropped_height))
@@ -186,8 +188,6 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
         
     def move(self, player, ground_group, bg_scroll_x, bg_scroll_y):
-        if self.isHurt:  # Don't move if hurt
-            return
 
         # Adjust rendering position first
         self.rect.x = self.x - bg_scroll_x
@@ -240,10 +240,12 @@ class Enemy(pygame.sprite.Sprite):
                     if temp_rect.right > ground.rect.left:
                         dx = 0
 
-        if self.type == "boss":
-            self.bossAi(player)
-        else:
-            self.ai(player)
+        if not self.isHurt:
+
+            if self.type == "boss":
+                self.bossAi(player)
+            else:
+                self.ai(player)
 
         # Update enemy's actual position (without applying bg_scroll_y)
         self.y += dy  # Always allow falling

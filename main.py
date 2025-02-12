@@ -1,6 +1,6 @@
 import pygame
 import sys, time, cv2
-import json
+import json, random
 from player import Player, bullet_group
 from settings import *
 from enemy import Enemy
@@ -84,15 +84,12 @@ def create_map():
             elif cell == 47:  # Enemy
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
                 enemy_group.add(enemy)
-            elif cell == 48:
+            elif cell == 50:
                 collect_item = CollectItem(world_x, world_y, "key", "key")
                 collect_item_group.add(collect_item)
             elif cell == 49:
                 collect_item = CollectItem(world_x, world_y, "health", "health")
                 collect_item_group.add(collect_item)
-            elif cell == 50:
-                collect_item = Ammo(world_x, world_y,"rifle")
-                ammo_group.add(collect_item)
             elif cell == 51:
                 collect_item = Ammo(world_x, world_y,"rifle")
                 ammo_group.add(collect_item)
@@ -381,11 +378,71 @@ class Plane(pygame.sprite.Sprite):
         self.rect.x = self.x - bg_scroll_x  # Apply scrolling adjustment
         self.rect.y = self.y - bg_scroll_y  # Apply vertical scrolling
         
-        if self.rect.left > player.rect.x and not self.isDropped:
-            print("Plane Destroyed")
+        if self.rect.centerx >= player.rect.centerx - 50 and not self.isDropped:
             self.isDropped = True
+            drop = Drop(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y)
+            drop_group.add(drop)
+
     
     def draw(self):
+        screen.blit(self.image, self.rect)
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+
+
+class Drop(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = drop_image
+        self.x = x
+        self.y = y
+        self.image = pygame.transform.scale(self.image, (50 * ZOOM_VALUE, 50 * ZOOM_VALUE))
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
+        self.vel_y = 0  # Falling speed
+        self.landed = False  # To check if it has hit the ground
+
+    def update(self):
+        if not self.landed:
+            # Adjust rendering position
+            self.rect.x = self.x - bg_scroll_x
+            self.vel_y += 0.03  # Gravity effect
+            self.y += self.vel_y  # Update actual y position
+
+            # Update rectangle position before checking collision
+            self.rect.y = self.y - bg_scroll_y
+
+            # Check for collision with the ground
+            for ground in ground_group:
+                if self.rect.colliderect(ground.rect):
+                    self.rect.bottom = ground.rect.top  # Stop at the ground
+                    self.y = self.rect.bottom - self.rect.height  # Correct positioning
+                    self.landed = True
+                    self.convert_to_supply()
+                    break  # Stop checking after landing
+
+
+
+
+    def convert_to_supply(self):
+        """Transform into a random supply item upon landing."""
+        random_item = random.choice([
+            ("health", "health"),
+            ("rifle_ammo", "rifle"),
+            ("smg_ammo", "smg")
+        ])
+
+
+        if "ammo" in random_item[0]:  
+            new_item = Ammo(self.rect.x + (CELL_SIZE * ZOOM_VALUE) // 2 + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE), random_item[1])
+            ammo_group.add(new_item)
+        else:
+            new_item = CollectItem(self.rect.x + (CELL_SIZE * ZOOM_VALUE) // 2 + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE) , random_item[0], random_item[1])
+            collect_item_group.add(new_item)
+
+        # Remove the drop after transforming
+        self.kill()
+
+    def draw(self, screen):
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
@@ -689,13 +746,17 @@ def main():
         
         if current_level == 3:
             if pygame.time.get_ticks() % 5000 == 0:
-                plane = Plane(0, 100)
+                plane = Plane(0, -40)
                 plane_group.add(plane)
                 
         for plane in plane_group:
             plane.update()
             plane.draw()
         
+        for drop in drop_group:
+            drop.update()
+            drop.draw(screen)
+
         
         # Display HUD
         display_HUD()
