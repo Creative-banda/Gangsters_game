@@ -36,6 +36,7 @@ class Enemy(pygame.sprite.Sprite):
             self.punch_damage = 50
             self.animation_dict = ENEMIES['BOSS_ENEMY']
             self.vision_length = 500 * self.zoom_value
+            self.base_speed = 3
             self.size = 2
             self.type = "boss"
             self.speed = 3
@@ -244,19 +245,19 @@ class Enemy(pygame.sprite.Sprite):
                 if temp_rect.colliderect(ground.rect):
                     if temp_rect.right > ground.rect.left:
                         dx = 0
-
-        if not self.isHurt:
-
+                        
+        if self.health > 0 and not self.isShoting and not self.isReloading and not self.isHurt:
             if self.type == "boss":
                 self.bossAi(player)
             else:
                 self.ai(player)
 
+
         # Update enemy's actual position (without applying bg_scroll_y)
         self.y += dy  # Always allow falling
         self.rect.y = self.y - bg_scroll_y  # Adjust rendering only
 
-        if self.health > 0 and not self.isShoting and not self.isReloading and not self.idling:
+        if self.health > 0 and not self.isShoting and not self.isReloading and not self.idling and not self.isHurt:
             self.x += dx  # Allow movement only if alive
 
         # Update rect position
@@ -321,29 +322,32 @@ class Enemy(pygame.sprite.Sprite):
             return
 
         # Check if stuck (Hasn't moved in 20 frames)
-        if hasattr(self, "stuck_counter") and self.rect.x == self.prev_x and self.current_action != "idle":
+        if hasattr(self, "stuck_counter") and self.rect.x == self.prev_x and not self.idling:
             self.stuck_counter += 1
         else:
             self.stuck_counter = 0
 
-        # If stuck for too long, jump
+        # If stuck for too long, jump AND move slightly
         if self.stuck_counter > 20:
             self.jump()
+            self.rect.x += 40 * self.direction  # Move slightly more to avoid repeated stuck issues
             self.stuck_counter = 0  # Reset counter after jumping
 
         # Store previous position to check if stuck next frame
         self.prev_x = self.rect.x
 
-        if not self.idling and player.health > 0:
+        # **Only move if NOT attacking or idling**
+        if not self.idling and not self.isShoting and not self.isReloading and player.health > 0:
             self.last_player_x = player.rect.x  # Store last seen position
             target_x = player.rect.x if random.randint(1, 3) > 1 else self.last_player_x
 
-            # **Distance Check**: If close enough, attack instead of moving
+            # **If close enough, attack instead of moving**
             distance_to_player = abs(self.rect.x - player.rect.x)
-            if distance_to_player < 100:  # Adjust distance threshold as needed
-                self.rect.x = self.rect.x  # Stop moving
-                self.punch_attack(player)
+            if distance_to_player < 25:
+                self.punch_attack(player)  # Attack when close
+                self.speed = 0
             else:
+                self.speed = self.base_speed
                 # Move toward target when far away
                 if self.rect.x < target_x:
                     self.rect.x += self.speed
