@@ -376,7 +376,7 @@ class Enemy(pygame.sprite.Sprite):
         attack_moves = ["Attack1", "Attack2", "Attack3"]
         self.update_animation(random.choice(attack_moves))
         self.last_punch_time = pygame.time.get_ticks()
-        if player.rect.colliderect(self.rect) and self.frame_index > 1:
+        if player.rect.colliderect(self.rect):
             player.health -= 30
             if player.health <= 0:
                 player.alive = False
