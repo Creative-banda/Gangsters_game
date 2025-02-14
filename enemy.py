@@ -57,7 +57,7 @@ class Enemy(pygame.sprite.Sprite):
         self.direction = -1
         self.vel_y = 0
         self.isReloading = False
-        self.isShoting = False
+        self.isAttacking = False
         self.isHurt = False  
         self.idle_counter = 0
         self.move_counter = 0
@@ -85,7 +85,7 @@ class Enemy(pygame.sprite.Sprite):
             self.isHurt = True
             self.update_animation("Hurt")
             # Reset other states
-            self.isShoting = False
+            self.isAttacking = False
             self.isReloading = False
             self.idling = False
             
@@ -107,7 +107,7 @@ class Enemy(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.last_bullet_time < 500 or self.isReloading:
             return
         if self.frame_index == self.shoot_frame:
-            self.isShoting = True
+            self.isAttacking = True
             bullet = Bullet(self.rect.centerx + (15*self.direction) + (PLAYER_SIZE[1]// 2 * self.direction),
                              self.rect.centery-10, self.direction, self.bullet_damage, self.zoom_value)
             bullet_group.add(bullet)
@@ -178,6 +178,8 @@ class Enemy(pygame.sprite.Sprite):
             
             elif self.current_action in ["Attack1", "Attack2", "Attack3"] and self.frame_index >= len(self.animations[self.current_action]):
                 self.update_animation("idle")
+                self.isAttacking = False  # Ensure boss can attack again
+
             
             elif self.current_action == "Dead" and self.frame_index >= len(self.animations[self.current_action]):
                 self.frame_index = len(self.animations[self.current_action]) - 1
@@ -246,7 +248,7 @@ class Enemy(pygame.sprite.Sprite):
                     if temp_rect.right > ground.rect.left:
                         dx = 0
                         
-        if self.health > 0 and not self.isShoting and not self.isReloading and not self.isHurt:
+        if self.health > 0 and not self.isReloading and not self.isHurt:
             if self.type == "boss":
                 self.bossAi(player)
             else:
@@ -257,7 +259,7 @@ class Enemy(pygame.sprite.Sprite):
         self.y += dy  # Always allow falling
         self.rect.y = self.y - bg_scroll_y  # Adjust rendering only
 
-        if self.health > 0 and not self.isShoting and not self.isReloading and not self.idling and not self.isHurt:
+        if self.health > 0 and not self.isReloading and not self.idling and not self.isHurt:
             self.x += dx  # Allow movement only if alive
 
         # Update rect position
@@ -328,7 +330,7 @@ class Enemy(pygame.sprite.Sprite):
             self.stuck_counter = 0
 
         # If stuck for too long, jump AND move slightly
-        if self.stuck_counter > 20:
+        if self.stuck_counter > 40:
             self.jump()
             self.rect.x += 40 * self.direction  # Move slightly more to avoid repeated stuck issues
             self.stuck_counter = 0  # Reset counter after jumping
@@ -337,13 +339,14 @@ class Enemy(pygame.sprite.Sprite):
         self.prev_x = self.rect.x
 
         # **Only move if NOT attacking or idling**
-        if not self.idling and not self.isShoting and not self.isReloading and player.health > 0:
+        if not self.idling and player.health > 0:
             self.last_player_x = player.rect.x  # Store last seen position
             target_x = player.rect.x if random.randint(1, 3) > 1 else self.last_player_x
+            print(self.frame_index)
 
             # **If close enough, attack instead of moving**
             distance_to_player = abs(self.rect.x - player.rect.x)
-            if distance_to_player < 25:
+            if distance_to_player < 10:
                 self.punch_attack(player)  # Attack when close
                 self.speed = 0
             else:
@@ -355,7 +358,8 @@ class Enemy(pygame.sprite.Sprite):
                 elif self.rect.x > target_x:
                     self.rect.x -= self.speed
                     self.direction = -1
-                self.update_animation("Run")
+                if not self.isAttacking:
+                    self.update_animation("Run")
 
         # Randomly idle to add variety
         if self.idling == False and random.randint(1, 400) == 1:
@@ -368,20 +372,25 @@ class Enemy(pygame.sprite.Sprite):
             self.idle_counter -= 1
             if self.idle_counter <= 0:
                 self.idling = False
+                self.update_animation("Run")
 
     def punch_attack(self, player):
         """Performs a punch attack"""
-        if pygame.time.get_ticks() - self.last_punch_time < 400:
-            return
+        
         attack_moves = ["Attack1", "Attack2", "Attack3"]
-        self.update_animation(random.choice(attack_moves))
-        self.last_punch_time = pygame.time.get_ticks()
-        if player.rect.colliderect(self.rect):
-            player.health -= 30
+        if not self.isAttacking:
+            self.update_animation(random.choice(attack_moves))
+        
+        self.isAttacking = True
+        # print(self.frame_index)
+        if player.rect.colliderect(self.rect) and self.frame_index >= 3 :
+            print("Player Hit")
+            player.health -= 1
             if player.health <= 0:
                 player.alive = False
             else:
                 player.update_animation("Hurt")
+
 
     def jump(self):
         """Boss jumps when stuck"""

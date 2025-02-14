@@ -43,7 +43,7 @@ class Player(pygame.sprite.Sprite):
             self.image = self.animations[self.current_action][len(self.animations[self.current_action])-1]
 
         self.rect = self.image.get_rect()
-        self.rect.midbottom = (0, 600)  # Changed from center to midbottom
+        #self.rect.midbottom = (0, 600)  # Changed from center to midbottom
         self.screen_height = 600  
         self.target_y = self.screen_height - 100   # Position player near bottom
         
@@ -95,6 +95,12 @@ class Player(pygame.sprite.Sprite):
         
         if not reload_channel.get_busy():
             self.isReloading = False
+        
+    
+        if self.InAir:
+            self.speed = 4
+        else:
+            self.speed = 2
 
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
@@ -314,6 +320,7 @@ class Player(pygame.sprite.Sprite):
     def update_size(self, ZOOM_VALUE):
         self.zoom_value = ZOOM_VALUE
         self.load_animations()
+        self.speed = 2 * self.zoom_value
         self.image = self.animations[self.current_action][self.frame_index]
         self.rect = self.image.get_rect()
        

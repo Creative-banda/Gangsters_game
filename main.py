@@ -265,21 +265,23 @@ class Grass(pygame.sprite.Sprite):
 class CollectItem(pygame.sprite.Sprite):
     def __init__(self, x, y, image, type):
         super().__init__()
+        self.type = type
         self.image = pygame.image.load(f"assets/image/collect_item/{image}.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 - 10 * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
+        if self.type == "smg" or self.type == "laser":
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
+        else:
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 - 10 * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y + CELL_SIZE // 2
         self.rect.center = (self.x, self.y)
-        self.type = type
     
     def update(self):
         self.rect.x = self.x - bg_scroll_x
         self.rect.y = self.y - bg_scroll_y
     
     def draw(self):
-        if self.type == "smg" or self.type == "laser":
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
+       
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
     
@@ -329,10 +331,10 @@ class Ammo(pygame.sprite.Sprite):
     
     
     def collect(self):
-        player.bullet_info[self.gunammo]['total'] += 10
+        player.bullet_info[self.gunammo]['total'] += 20
         ammo_group.remove(self)
         bullet_pickup_sound.play()
-        show_achievement(f"{self.gunammo} Ammo +10")
+        show_achievement(f"{self.gunammo} Ammo +20")
     
     def draw(self):
         screen.blit(self.image, self.rect)
@@ -750,7 +752,7 @@ def main():
         # Spawn Random Plane In Level 3
         
         if current_level == 3:
-            if pygame.time.get_ticks() % 5000 == 0:
+            if pygame.time.get_ticks() % 4000 == 0:
                 plane = Plane(0, -40)
                 plane_group.add(plane)
                 
