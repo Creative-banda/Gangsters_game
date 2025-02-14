@@ -43,7 +43,7 @@ class Player(pygame.sprite.Sprite):
             self.image = self.animations[self.current_action][len(self.animations[self.current_action])-1]
 
         self.rect = self.image.get_rect()
-        #self.rect.midbottom = (0, 600)  # Changed from center to midbottom
+        self.rect.midbottom = (0, 600)  # Changed from center to midbottom
         self.screen_height = 600  
         self.target_y = self.screen_height - 100   # Position player near bottom
         

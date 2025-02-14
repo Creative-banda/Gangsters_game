@@ -48,7 +48,7 @@ def create_map():
     with open(f"assets/level_{current_level}.json") as file:
         maze_layout = json.load(file)
     
-    if current_level == 3:
+    if current_level == 4:
         ZOOM_VALUE = 0.5
         player.update_size(ZOOM_VALUE)
         for bullet in bullet_group:
@@ -102,6 +102,9 @@ def create_map():
             elif cell == 57:
                 collect_item = CollectItem(world_x, world_y,"smg_gun","smg")
                 collect_item_group.add(collect_item)
+            elif cell == 58:
+                collect_item = Ammo(world_x, world_y,"laser")
+                ammo_group.add(collect_item)
             elif cell == 59:
                 collect_item = Ammo(world_x, world_y,"smg")
                 ammo_group.add(collect_item)
@@ -751,18 +754,18 @@ def main():
         
         # Spawn Random Plane In Level 3
         
-        if current_level == 3:
+        if current_level == 4:
             if pygame.time.get_ticks() % 4000 == 0:
                 plane = Plane(0, -40)
                 plane_group.add(plane)
                 
-        for plane in plane_group:
-            plane.update()
-            plane.draw()
-        
-        for drop in drop_group:
-            drop.update()
-            drop.draw(screen)
+            for plane in plane_group:
+                plane.update()
+                plane.draw()
+            
+            for drop in drop_group:
+                drop.update()
+                drop.draw(screen)
 
         
         # Display HUD
