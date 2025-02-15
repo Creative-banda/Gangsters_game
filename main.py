@@ -26,7 +26,7 @@ level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/stre
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 
-current_level = 2
+current_level = 1
 
 isDeathSoundPlay = False
 
