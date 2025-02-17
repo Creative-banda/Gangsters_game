@@ -25,7 +25,7 @@ class Enemy(pygame.sprite.Sprite):
             self.type = "normal"
         elif enemy_type == "strong":
             self.health = 500
-            self.max_health = 100
+            self.max_health = 500
             self.shoot_frame = 3
             self.bullet_damage = 60
             self.vision_length = 400 * self.zoom_value

@@ -37,6 +37,7 @@ achievement_alpha = 0  # Transparency (0 = invisible, 255 = fully visible)
 achievement_timer = 0
 
 
+
 # All Sprite
 bullet_group = pygame.sprite.Group()
 ground_group = pygame.sprite.Group()
