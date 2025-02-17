@@ -16,8 +16,10 @@ bg_scroll_x = 0
 bg_scroll_y = 0
 isfading = False
 
-# play starting music
+# PLAY BACKGROUND MUSIC
 starting_sound.play(-1)
+
+# FONTS
 
 font = pygame.font.Font('assets/font/Pricedown.otf', 25)
 big_font = pygame.font.Font("assets/font/Pricedown.otf", 50)
@@ -26,8 +28,9 @@ level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/stre
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 
-current_level = 2
+# TRACKING LOCAL VARIABLES
 
+current_level = 0
 isDeathSoundPlay = False
 
  # Create a surface for the fade out
@@ -85,10 +88,10 @@ def create_map():
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
                 enemy_group.add(enemy)
             elif cell == 50:
-                collect_item = CollectItem(world_x, world_y, "key", "key")
+                collect_item = CollectItem(world_x, world_y, "key")
                 collect_item_group.add(collect_item)
             elif cell == 49:
-                collect_item = CollectItem(world_x, world_y, "health", "health")
+                collect_item = CollectItem(world_x, world_y, "health")
                 collect_item_group.add(collect_item)
             elif cell == 51:
                 collect_item = Ammo(world_x, world_y,"rifle")
@@ -99,8 +102,11 @@ def create_map():
             elif cell == 55:
                 exit = Exit(world_x, world_y)
                 exit_group.add(exit)
+            elif cell == 56:
+                collect_item = CollectItem(world_x, world_y,"laser")
+                collect_item_group.add(collect_item)
             elif cell == 57:
-                collect_item = CollectItem(world_x, world_y,"smg_gun","smg")
+                collect_item = CollectItem(world_x, world_y,"smg")
                 collect_item_group.add(collect_item)
             elif cell == 58:
                 collect_item = Ammo(world_x, world_y,"laser")
@@ -115,8 +121,6 @@ def create_map():
                 enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
                 enemy_group.add(enemy)
                 
-
-            
 
 def show_achievement(text, duration=1000):
     """Displays an achievement message at the top of the screen."""
@@ -266,22 +270,42 @@ class Grass(pygame.sprite.Sprite):
 
 
 class CollectItem(pygame.sprite.Sprite):
-    def __init__(self, x, y, image, type):
+    def __init__(self, x, y, type):
         super().__init__()
         self.type = type
-        self.image = pygame.image.load(f"assets/image/collect_item/{image}.png")
-        if self.type == "smg" or self.type == "laser":
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
-        else:
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 - 10 * ZOOM_VALUE, CELL_SIZE // 2 * ZOOM_VALUE))
-        self.rect = self.image.get_rect()
+        self.frame_index = 0
+        self.max_frame_index = 39
         self.x = x
-        self.y = y + CELL_SIZE // 2
+        self.animation_cooldown = 50   
+        
+        self.last_update_time = pygame.time.get_ticks()
+        self.images = []
+        
+        for i in range(self.max_frame_index):
+            self.image = pygame.image.load(f"assets/image/collect_item/{self.type}/{self.type}-{i}.png").convert_alpha()
+            if self.type == "smg" or self.type == "laser":
+                self.image = pygame.transform.scale(self.image, (CELL_SIZE + 30 * ZOOM_VALUE, CELL_SIZE + 30  * ZOOM_VALUE))
+                self.y = y         
+            else:
+                self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE + 10 * ZOOM_VALUE))
+                self.y = y
+            self.images.append(self.image)
+        
+        
+        self.image = self.images[self.frame_index]
+        self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
     
     def update(self):
         self.rect.x = self.x - bg_scroll_x
         self.rect.y = self.y - bg_scroll_y
+        if pygame.time.get_ticks() - self.last_update_time > self.animation_cooldown:
+            self.last_update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+            if self.frame_index >= self.max_frame_index - 1:
+                self.frame_index = 0
+            
+            self.image = self.images[self.frame_index]
     
     def draw(self):
        
@@ -290,22 +314,29 @@ class CollectItem(pygame.sprite.Sprite):
     
     def collect(self):
         if self.type == "health" and player.health < 100:
+            print(player.health)
             player.health = min(player.health + 20, 100)
-            collect_item_group.remove(self)
             health_pickup_sound.play()
             show_achievement("Health +20")
+            
+            self.kill()
         elif self.type == "key":
             player.has_key = True
             health_pickup_sound.play()
-            collect_item_group.remove(self)
             show_achievement("Key Collected !")
+            self.kill()
         elif self.type == "smg":
             player.isSmg = True
-            collect_item_group.remove(self)
             health_pickup_sound.play()
             show_achievement("New Weapon SMG Unlocked")
-            
-
+            self.kill()
+        elif self.type == "laser":
+            player.isLaser = True
+            health_pickup_sound.play()
+            show_achievement("New Weapon Laser Unlocked")
+            self.kill()
+        
+           
 class Ammo(pygame.sprite.Sprite):
     def __init__(self, x, y, gunammo):
         super().__init__()
@@ -319,6 +350,12 @@ class Ammo(pygame.sprite.Sprite):
         self.rect.center = (self.x, self.y)
         self.animation_cooldown = 100
         self.last_update_time = pygame.time.get_ticks()
+        if self.gunammo == "rifle":
+            self.ammo_contain = 20
+        elif self.gunammo == "smg":
+            self.ammo_contain = 30
+        elif self.gunammo == "laser":
+            self.ammo_contain = 10
     
     def update(self):
         self.rect.x = self.x - bg_scroll_x
@@ -334,10 +371,10 @@ class Ammo(pygame.sprite.Sprite):
     
     
     def collect(self):
-        player.bullet_info[self.gunammo]['total'] += 20
+        player.bullet_info[self.gunammo]['total'] +=self.ammo_contain
         ammo_group.remove(self)
         bullet_pickup_sound.play()
-        show_achievement(f"{self.gunammo} Ammo +20")
+        show_achievement(f"{self.gunammo} Ammo +{self.ammo_contain}")
     
     def draw(self):
         screen.blit(self.image, self.rect)
@@ -370,6 +407,7 @@ class Jumper(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
+
 
 class Plane(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -625,9 +663,8 @@ def display_HUD():
     screen.blit(running_icon, (10, 130))
 
 
-
-    
 player = Player()
+
 
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
@@ -825,5 +862,5 @@ def main():
         clock.tick(FPS)
 
 if __name__ == "__main__":
-    # show_Intro()
+    show_Intro()
     main()
