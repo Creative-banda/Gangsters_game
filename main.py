@@ -22,15 +22,16 @@ starting_sound.play(-1)
 # FONTS
 
 font = pygame.font.Font('assets/font/Pricedown.otf', 25)
-big_font = pygame.font.Font("assets/font/Pricedown.otf", 50)
+big_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 50)
 # Level text with neon flicker
-level_font = pygame.font.Font("assets/font/INFECTED.ttf", 80)  # Use a tech/street font
+level_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 80)  # Use a tech/street font
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 
 # TRACKING LOCAL VARIABLES
 
-current_level = 3
+current_level = 0
+
 isDeathSoundPlay = False
 
  # Create a surface for the fade out
@@ -509,17 +510,16 @@ def DisplayLevel():
     start_alpha = 0
     neon_hue = 0
     current_level += 1
+    
+    game_name = level_font.render("CITY GANG", True, (185, 1, 3))
 
-
+    level_text = start_font.render(f"Level {current_level}", True, (185, 1, 3))
 
     while True:
         screen.fill((10, 10, 15))  # Dark base color
-    
-        level_text = level_font.render("CITY GANG", True, (185, 1, 3))
         
-        screen.blit(level_text, (SCREEN_WIDTH//2 - 180, SCREEN_HEIGHT//2 - 120))
+        screen.blit(game_name, (SCREEN_WIDTH//2 - 250 , SCREEN_HEIGHT//2 - 120))
         
-        level_text = start_font.render(f"Level {current_level}", True, (185, 1, 3))
         screen.blit(level_text, (SCREEN_WIDTH//2 - 50, 30))
 
         # Animated neon button
