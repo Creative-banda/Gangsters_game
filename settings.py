@@ -51,10 +51,14 @@ ammo_group = pygame.sprite.Group()
 plane_group = pygame.sprite.Group()
 drop_group = pygame.sprite.Group()
 
+bg_img_list = []
+
 # images
 
 bullet_image = pygame.image.load("assets/image/bullets/bullet.png").convert_alpha()
-background_image = pygame.image.load("assets/image/background/2.png").convert_alpha()
+for i in range(2,6):
+    background_image = pygame.image.load(f"assets/image/background/{i}.png").convert_alpha()
+    bg_img_list.append(background_image)
 heart_image = pygame.image.load("assets/icons/heart.png").convert_alpha()
 bullet_icon = pygame.image.load("assets/icons/bullet.png").convert_alpha()
 remaining_bullet_icon = pygame.image.load("assets/icons/remaining_bullet.png").convert_alpha()

@@ -30,7 +30,7 @@ start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 # TRACKING LOCAL VARIABLES
 
-current_level = 2
+current_level = 0
 isDeathSoundPlay = False
 
  # Create a surface for the fade out
@@ -45,7 +45,7 @@ intro_surface.fill((0, 200, 255))  # Neon Cyan
 fade_alpha = 255
 
 def create_map():
-    global background_image, bg_images, bg_scroll_x, bg_scroll_y, current_level, ZOOM_VALUE
+    global scaled_bg_images, bg_scroll_x, bg_scroll_y, current_level, ZOOM_VALUE, height, width
     
     # Load the level 1 as json file 
     with open(f"assets/level_{current_level}.json") as file:
@@ -56,7 +56,7 @@ def create_map():
         player.update_size(ZOOM_VALUE)
         for bullet in bullet_group:
             bullet.update_size(ZOOM_VALUE)
-    
+        
     height = len(maze_layout)
     width = len(maze_layout[0])
     
@@ -65,7 +65,10 @@ def create_map():
 
     # Load the background image
     
-    background_image = pygame.transform.scale(background_image, (width * CELL_SIZE * ZOOM_VALUE, height * CELL_SIZE * ZOOM_VALUE))
+    scaled_bg_images = [pygame.transform.scale(bg_img, (width * CELL_SIZE // 4* ZOOM_VALUE, height * CELL_SIZE // 3 * ZOOM_VALUE)) for bg_img in bg_img_list]
+
+    
+    
     
     # First create all ground tiles without any offset
     for y, row in enumerate(maze_layout):
@@ -706,7 +709,11 @@ def main():
 
         
         # Draw the background image
-        screen.blit(background_image, (0 -bg_scroll_x, 0 - bg_scroll_y))
+        # screen.blit(background_image, (width * CELL_SIZE -bg_scroll_x, height * CELL_SIZE - bg_scroll_y))
+        # screen.blit(background_image, (0 - bg_scroll_x , height * CELL_SIZE // 1.45 - bg_scroll_y ))
+        
+        for i, bg_img in enumerate(scaled_bg_images):
+            screen.blit(bg_img, (i * 300 - (bg_scroll_x * 0.4) , height * CELL_SIZE // 1.46 - bg_scroll_y ))
         
         # Update and draw the player
         x, y = player.move(ground_group)
@@ -789,7 +796,7 @@ def main():
         #     player.health = 0
         
         
-        # Spawn Random Plane In Level 3
+        # Spawn Random Plane In Level 4
         
         if current_level == 4:
             if pygame.time.get_ticks() % 4000 == 0:
