@@ -30,14 +30,14 @@ start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 # TRACKING LOCAL VARIABLES
 
-current_level = 0
+current_level = 3
 isDeathSoundPlay = False
 
  # Create a surface for the fade out
 outro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 outro_surface.fill((220, 20, 60))
 
-# Create a surface for the fade in
+# CREATE A SURFACE FOR THE FADE IN 
 
 intro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 intro_surface.fill((0, 200, 255))  # Neon Cyan
@@ -56,6 +56,7 @@ def create_map():
         player.update_size(ZOOM_VALUE)
         for bullet in bullet_group:
             bullet.update_size(ZOOM_VALUE)
+            
         
     height = len(maze_layout)
     width = len(maze_layout[0])
@@ -279,6 +280,7 @@ class CollectItem(pygame.sprite.Sprite):
         self.frame_index = 0
         self.max_frame_index = 39
         self.x = x
+        self.y = y 
         self.animation_cooldown = 50   
         
         self.last_update_time = pygame.time.get_ticks()
@@ -287,11 +289,9 @@ class CollectItem(pygame.sprite.Sprite):
         for i in range(self.max_frame_index):
             self.image = pygame.image.load(f"assets/image/collect_item/{self.type}/{self.type}-{i}.png").convert_alpha()
             if self.type == "smg" or self.type == "laser":
-                self.image = pygame.transform.scale(self.image, (CELL_SIZE + 30 * ZOOM_VALUE, CELL_SIZE + 30  * ZOOM_VALUE))
-                self.y = y         
+                self.image = pygame.transform.scale(self.image, (CELL_SIZE + 30 * ZOOM_VALUE, CELL_SIZE + 30  * ZOOM_VALUE))        
             else:
                 self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE + 10 * ZOOM_VALUE))
-                self.y = y
             self.images.append(self.image)
         
         
@@ -413,9 +413,10 @@ class Jumper(pygame.sprite.Sprite):
 
 
 class Plane(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, type):
         super().__init__()
-        self.image = plane_image
+        self.type = type
+        self.image = pygame.image.load(f"assets/image/background/{self.type}_plane.png")
         self.image = pygame.transform.scale(self.image, (80 * ZOOM_VALUE, 50 * ZOOM_VALUE))
         self.rect = self.image.get_rect()
         self.x = x
@@ -431,8 +432,12 @@ class Plane(pygame.sprite.Sprite):
         
         if self.rect.centerx >= player.rect.centerx - 50 and not self.isDropped:
             self.isDropped = True
-            drop = Drop(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y)
-            drop_group.add(drop)
+            if self.type == "enemy":
+                enemy = Enemy(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y - (CELL_SIZE * ZOOM_VALUE), "normal", 0.5)
+                enemy_group.add(enemy)
+            elif self.type == "drop":
+                drop = Drop(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y)
+                drop_group.add(drop)
 
     
     def draw(self):
@@ -487,11 +492,12 @@ class Drop(pygame.sprite.Sprite):
             new_item = Ammo(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE), random_item[1])
             ammo_group.add(new_item)
         else:
-            new_item = CollectItem(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE) , random_item[0], random_item[1])
+            new_item = CollectItem(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y  - (CELL_SIZE * ZOOM_VALUE) , random_item[1])
             collect_item_group.add(new_item)
 
         # Remove the drop after transforming
         self.kill()
+
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
@@ -675,6 +681,12 @@ def main():
     DisplayLevel()
     # play background music
     bg_music.play(-1)
+    
+    # Random Choice for Plane Selection
+    values = ["drop", "enemy"]
+
+    # List of probabilities corresponding to each value
+    probabilities = [0.7, 0.3]
 
     while True:
         for event in pygame.event.get():
@@ -795,12 +807,13 @@ def main():
         #     player.alive = False
         #     player.health = 0
         
-        
         # Spawn Random Plane In Level 4
         
         if current_level == 4:
-            if pygame.time.get_ticks() % 4000 == 0:
-                plane = Plane(0, -40)
+            if pygame.time.get_ticks() % 400 == 0:
+                chosen_value = random.choices(values, probabilities, k=1)[0]
+
+                plane = Plane(-300, -40, chosen_value)
                 plane_group.add(plane)
                 
             for plane in plane_group:

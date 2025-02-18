@@ -1,16 +1,16 @@
 import pygame, random
-from settings import PLAYER_SIZE, CELL_SIZE, ENEMIES, ZOOM_VALUE
+from settings import PLAYER_SIZE, CELL_SIZE, ENEMIES
 from player import Bullet, bullet_group
 
 
 class Enemy(pygame.sprite.Sprite):
     
-    def __init__(self, x, y, enemy_type):
+    def __init__(self, x, y, enemy_type, ZOOM_VALUE=1):
         super().__init__()
         
         self.animations = {}
         self.zoom_value = ZOOM_VALUE
-        self.size = 1
+        self.size = 1 
         
         self.speed = 0.7
         
@@ -79,8 +79,6 @@ class Enemy(pygame.sprite.Sprite):
         # creating a rect for health bar
         self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5)
         
-
-
     def take_damage(self, damage):
         if not self.isHurt:  # Only trigger hurt if not already hurt
             self.isHurt = True
@@ -217,7 +215,7 @@ class Enemy(pygame.sprite.Sprite):
                 dx = -self.speed
         else:
             # If dead, apply gravity but no horizontal movement
-            self.vel_y += 0.5  # Keep applying gravity
+            self.vel_y += 0.5 * self.zoom_value  # Keep applying gravity
             dy += self.vel_y
             dx = 0  # Stop moving left or right
 
@@ -343,7 +341,6 @@ class Enemy(pygame.sprite.Sprite):
         if not self.idling and player.health > 0:
             self.last_player_x = player.rect.x  # Store last seen position
             target_x = player.rect.x if random.randint(1, 3) > 1 else self.last_player_x
-            print(self.frame_index)
 
             # **If close enough, attack instead of moving**
             distance_to_player = abs(self.rect.x - player.rect.x)
@@ -383,9 +380,7 @@ class Enemy(pygame.sprite.Sprite):
             self.update_animation(random.choice(attack_moves))
         
         self.isAttacking = True
-        # print(self.frame_index)
         if player.rect.colliderect(self.rect) and self.frame_index >= 3 :
-            print("Player Hit")
             player.health -= 1
             if player.health <= 0:
                 player.alive = False

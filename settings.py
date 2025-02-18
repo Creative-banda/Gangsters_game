@@ -67,7 +67,6 @@ running_icon = pygame.image.load("assets/icons/running.png").convert_alpha()
 running_icon = pygame.transform.scale(running_icon, (25,25))
 key_image = pygame.image.load("assets/image/collect_item/key.png").convert_alpha()
 key_image = pygame.transform.scale(key_image, (45,35))
-plane_image = pygame.image.load("assets/image/background/plane.png").convert_alpha()
 drop_image = pygame.image.load("assets/image/background/drop.png").convert_alpha()
 
 # sound effects
