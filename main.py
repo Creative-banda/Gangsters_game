@@ -30,7 +30,7 @@ start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
 
 # TRACKING LOCAL VARIABLES
 
-current_level = 0
+current_level = 2
 isDeathSoundPlay = False
 
  # Create a surface for the fade out
