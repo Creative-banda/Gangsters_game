@@ -26,11 +26,12 @@ big_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 50)
 # Level text with neon flicker
 level_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 80)  # Use a tech/street font
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
+conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 20)
 
 
 # TRACKING LOCAL VARIABLES
 
-current_level = 0
+current_level = 3
 
 isDeathSoundPlay = False
 
@@ -123,8 +124,8 @@ def create_map():
             elif cell == 60:  # Player
                 player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
             elif cell == 100:
-                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
-                enemy_group.add(enemy)
+                boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
+                boss_group.add(boss)
                 
 
 def show_achievement(text, duration=1000):
@@ -290,9 +291,9 @@ class CollectItem(pygame.sprite.Sprite):
         for i in range(self.max_frame_index):
             self.image = pygame.image.load(f"assets/image/collect_item/{self.type}/{self.type}-{i}.png").convert_alpha()
             if self.type == "smg" or self.type == "laser":
-                self.image = pygame.transform.scale(self.image, (CELL_SIZE + 30 * ZOOM_VALUE, CELL_SIZE + 30  * ZOOM_VALUE))        
+                self.image = pygame.transform.scale(self.image, ((CELL_SIZE + 30) * ZOOM_VALUE, (CELL_SIZE + 30)  * ZOOM_VALUE))        
             else:
-                self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE + 10 * ZOOM_VALUE))
+                self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, (CELL_SIZE + 10)  * ZOOM_VALUE ))
             self.images.append(self.image)
         
         
@@ -434,7 +435,8 @@ class Plane(pygame.sprite.Sprite):
         if self.rect.centerx >= player.rect.centerx - 50 and not self.isDropped:
             self.isDropped = True
             if self.type == "enemy":
-                enemy = Enemy(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y - (CELL_SIZE * ZOOM_VALUE), "normal", 0.5)
+                
+                enemy = Enemy(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y - (CELL_SIZE * ZOOM_VALUE), random.choice(["normal", "strong"]), 0.5)
                 enemy_group.add(enemy)
             elif self.type == "drop":
                 drop = Drop(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y)
@@ -671,8 +673,30 @@ def display_HUD():
     pygame.draw.rect(screen, color, (40,130, current_width, 20))
     screen.blit(running_icon, (10, 130))
 
+def draw_text(text, x, y):
+    text_surface = conversation_font.render(text, True, (255, 255, 255))
+    screen.blit(text_surface, (x, y))
+
+
 
 player = Player()
+
+conversation = [
+    ("Enemy", "Target identified. Your termination is inevitable."),
+    ("Enemy", "Resistance is illogical. Surrender is not an option."),
+    ("Player", "Yet, here I stand. Looks like your calculations need an upgrade."),
+    ("Player", "Tell me, do you machines ever get tired of being wrong?"),
+    ("Enemy", "Your continued existence is an anomaly—one that ends now."),
+    ("Enemy", "Your organic limitations cannot compete with perfected design."),
+    ("Player", "Big words for a pile of malfunctioning circuits."),
+    ("Player", "But you and I both know—machines break."),
+    ("Enemy", "Incorrect. Machines evolve. Unlike you, I do not feel pain."),
+    ("Enemy", "I do not hesitate. I do not fail."),
+    ("Player", "And yet, the Syndicate still sent you after me."),
+    ("Player", "Guess even they don’t trust their hardware to finish the job."),
+    ("Enemy", "They sent me because you refuse to accept reality."),
+    ("Enemy", "But persistence is not survival. Only elimination remains."),
+]
 
 
 def main():
@@ -681,12 +705,16 @@ def main():
     DisplayLevel()
     # play background music
     bg_music.play(-1)
+    current_line = 0  # Track which line of conversation is being shown
+    
+    isConversation_Started = False # Check if conversation has started
     
     # Random Choice for Plane Selection
     values = ["drop", "enemy"]
 
     # List of probabilities corresponding to each value
     probabilities = [0.7, 0.3]
+    Conversation_Ended = False
 
     while True:
         for event in pygame.event.get():
@@ -715,11 +743,22 @@ def main():
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     select_sound.play()
                     show_achievement("Laser Selected")
+                if event.key == pygame.K_SPACE and isConversation_Started and not Conversation_Ended:
+                    current_line += 1
        
         # Draw the background
         screen.fill((119,120,121))
-
         
+        #Check Conversation Started
+        if current_level == 4 and not isConversation_Started:
+            for enemy in boss_group:
+                print(abs(player.rect.x - enemy.rect.x))
+                if abs(player.rect.x - enemy.rect.x) < 200:
+                    isConversation_Started = True
+                    player.isActive = False
+                    player.update_animation("idle")
+                    break
+    
         # Draw the background image
         # screen.blit(background_image, (width * CELL_SIZE -bg_scroll_x, height * CELL_SIZE - bg_scroll_y))
         # screen.blit(background_image, (0 - bg_scroll_x , height * CELL_SIZE // 1.45 - bg_scroll_y ))
@@ -786,6 +825,22 @@ def main():
             if diff_x < 800 and diff_y < 600:
                 ground.draw()
         
+
+            
+        for boss in boss_group:
+            diff_x = abs(boss.x - bg_scroll_x - player_x)
+            diff_y = abs(boss.y - bg_scroll_y - player_y)
+            # # print(diff_x, diff_y)
+            if diff_x < 800 and diff_y < 600:
+                boss.update()
+                boss.move(player, ground_group, bg_scroll_x, bg_scroll_y)
+                boss.draw(screen)
+            if boss.health <= 0:
+                for enemy in enemy_group:
+                    enemy.health = 0
+                    enemy.isActive = False
+                    enemy.update_animation("Dead")
+
         # Update and draw the enemy
         for enemy in enemy_group:
             diff_x = abs(enemy.x - bg_scroll_x - player_x)
@@ -809,7 +864,7 @@ def main():
         
         # Spawn Random Plane In Level 4
         
-        if current_level == 4:
+        if current_level == 4 and Conversation_Ended:
             if pygame.time.get_ticks() % 400 == 0:
                 chosen_value = random.choices(values, probabilities, k=1)[0]
 
@@ -829,6 +884,30 @@ def main():
         display_HUD()
         # Draw the achievement text
         draw_achievement()
+        
+        if isConversation_Started and not Conversation_Ended:
+                
+            # Display Conversation
+            if current_line < len(conversation):
+                speaker, text = conversation[current_line]            
+                # Show character image
+                if speaker == "Player":
+                    screen.blit(player_img, (0, SCREEN_HEIGHT - 130))  # Left side
+                    draw_text(text, 70, SCREEN_HEIGHT - 50)    
+                else:
+                    screen.blit(enemy_img, (SCREEN_WIDTH - 130, SCREEN_HEIGHT - 130))  # Right side
+                    draw_text(text, 10, SCREEN_HEIGHT - 50)    
+            else:
+                Conversation_Ended = True
+                for enemy in boss_group:
+                    enemy.isActive = True
+                player.isActive = True
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+       
         
         
         # Display FPS in the Screen

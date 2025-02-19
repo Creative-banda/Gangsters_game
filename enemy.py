@@ -15,6 +15,7 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = 0.7
         
         self.max_health = 100
+        self.isActive = True
 
         if enemy_type == "normal":
             self.health = 100
@@ -43,6 +44,7 @@ class Enemy(pygame.sprite.Sprite):
             self.speed = 3
             self.max_health = 10000
             self.last_punch_time = pygame.time.get_ticks()
+            self.isActive = False
             
             
         self.current_action = "idle"
@@ -78,7 +80,8 @@ class Enemy(pygame.sprite.Sprite):
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
         self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5)
-        
+   
+     
     def take_damage(self, damage):
         if not self.isHurt:  # Only trigger hurt if not already hurt
             self.isHurt = True
@@ -160,7 +163,6 @@ class Enemy(pygame.sprite.Sprite):
             self.animations[action] = frames
 
 
-
     def update(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_update_time > self.animation_dict[self.current_action]["animation_cooldown"]:
@@ -193,7 +195,8 @@ class Enemy(pygame.sprite.Sprite):
             self.frame_index = 0
             self.image = self.animations[self.current_action][self.frame_index] 
         self.image = pygame.transform.flip(self.image, self.direction == -1, False)
-        
+
+
     def move(self, player, ground_group, bg_scroll_x, bg_scroll_y):
 
         # Adjust rendering position first
@@ -247,7 +250,7 @@ class Enemy(pygame.sprite.Sprite):
                     if temp_rect.right > ground.rect.left:
                         dx = 0
                         
-        if self.health > 0 and not self.isReloading and not self.isHurt:
+        if self.health > 0 and not self.isReloading and not self.isHurt and self.isActive:
             if self.type == "boss":
                 self.bossAi(player)
             else:
@@ -258,14 +261,12 @@ class Enemy(pygame.sprite.Sprite):
         self.y += dy  # Always allow falling
         self.rect.y = self.y - bg_scroll_y  # Adjust rendering only
 
-        if self.health > 0 and not self.isReloading and not self.idling and not self.isHurt:
+        if self.health > 0 and not self.isReloading and not self.idling and not self.isHurt and self.isActive:
             self.x += dx  # Allow movement only if alive
 
         # Update rect position
         self.rect.x = self.x - bg_scroll_x  # Adjust rendering only
         self.vision_rect.center = self.rect.center
-
-        
 
 
     def update_animation(self, new_action):
@@ -372,6 +373,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.idling = False
                 self.update_animation("Run")
 
+
     def punch_attack(self, player):
         """Performs a punch attack"""
         
@@ -394,5 +396,3 @@ class Enemy(pygame.sprite.Sprite):
             self.vel_y -= 10
             self.update_animation("jump")
             self.rect.x -= 30 * self.direction  # Move slightly to avoid getting stuck
-
-

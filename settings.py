@@ -50,6 +50,7 @@ grass_group = pygame.sprite.Group()
 ammo_group = pygame.sprite.Group()
 plane_group = pygame.sprite.Group()
 drop_group = pygame.sprite.Group()
+boss_group = pygame.sprite.Group()
 
 bg_img_list = []
 
@@ -68,6 +69,14 @@ running_icon = pygame.transform.scale(running_icon, (25,25))
 key_image = pygame.image.load("assets/image/collect_item/key.png").convert_alpha()
 key_image = pygame.transform.scale(key_image, (45,35))
 drop_image = pygame.image.load("assets/image/background/drop.png").convert_alpha()
+
+# Conversation Images
+player_img = pygame.image.load("assets/conversation/player.png").convert_alpha()
+player_img = pygame.transform.scale(player_img, (100, 150))
+
+enemy_img = pygame.image.load("assets/conversation/enemy.png").convert_alpha()
+enemy_img = pygame.transform.scale(enemy_img, (150, 150))
+
 
 # sound effects
 

@@ -26,10 +26,11 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
-        self.isLaser = False
-        self.isSmg = False
+        self.isLaser = True
+        self.isSmg = True
         self.sprint_value = 200
         self.last_sprint_update = pygame.time.get_ticks()
+        self.isActive = True
     
         self.bullet_info = copy.deepcopy(BULLET_INFO) # Copy the dictionary to avoid modifying the original dictionary
 
@@ -82,6 +83,9 @@ class Player(pygame.sprite.Sprite):
 
 
     def move(self, ground_group):
+        if not self.isActive:
+            return 0, 0
+        
         if not self.alive:
             self.update_animation("Dead")
         dx = 0
@@ -354,6 +358,10 @@ class Bullet(pygame.sprite.Sprite):
                 if self.rect.colliderect(enemy.rect) and enemy.health > 0:
                     self.kill()
                     enemy.take_damage(self.damage)
+        for boss in boss_group:
+            if self.rect.colliderect(boss.rect) and boss.isActive:
+                self.kill()
+                boss.take_damage(self.damage)
                 
         if self.rect.colliderect(player.rect):
             self.kill()
