@@ -26,8 +26,8 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
-        self.isLaser = True
-        self.isSmg = True
+        self.isLaser = False
+        self.isSmg = False
         self.sprint_value = 200
         self.last_sprint_update = pygame.time.get_ticks()
         self.isActive = True
@@ -54,7 +54,7 @@ class Player(pygame.sprite.Sprite):
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
         self.health_bar = pygame.Rect(40, 10, self.health_bar_length, 20)
-        self.has_key = True
+        self.has_key = False
     
     def load_animations(self):
         """Load animations from the defined data."""

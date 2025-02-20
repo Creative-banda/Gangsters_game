@@ -34,7 +34,7 @@ class Enemy(pygame.sprite.Sprite):
             
             self.animation_dict = ENEMIES['HEAVY_ENEMY']
         elif enemy_type == "boss":
-            self.health = 1000
+            self.health = 10000
             self.punch_damage = 50
             self.animation_dict = ENEMIES['BOSS_ENEMY']
             self.vision_length = 500 * self.zoom_value
@@ -42,7 +42,7 @@ class Enemy(pygame.sprite.Sprite):
             self.size = 2
             self.type = "boss"
             self.speed = 3
-            self.max_health = 1000
+            self.max_health = 10000
             self.last_punch_time = pygame.time.get_ticks()
             self.isActive = False
             
