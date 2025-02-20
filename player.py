@@ -327,8 +327,8 @@ class Player(pygame.sprite.Sprite):
         self.speed = 2 * self.zoom_value
         self.image = self.animations[self.current_action][self.frame_index]
         self.rect = self.image.get_rect()
-       
-        
+
+ 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction, damage, ZOOM_VALUE):
         super().__init__()
@@ -342,10 +342,12 @@ class Bullet(pygame.sprite.Sprite):
         self.direction = direction
         self.damage = damage
 
+
     def update(self, bg_scroll_x, bg_scroll_y):
         self.rect.x += BULLET_SPEED * self.direction 
         self.rect.y -= bg_scroll_y
         self.rect.x -= bg_scroll_x
+    
     
     def check_collision(self, ground_group, enemy_group, player, bg_scroll_x, bg_scroll_y):
         if pygame.sprite.spritecollide(self, ground_group, False):
@@ -370,6 +372,7 @@ class Bullet(pygame.sprite.Sprite):
                 player.alive = False
             else:
                 player.update_animation("Hurt")
+   
         
     def draw(self, screen):
         screen.blit(self.image, self.rect)

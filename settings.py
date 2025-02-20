@@ -51,6 +51,7 @@ ammo_group = pygame.sprite.Group()
 plane_group = pygame.sprite.Group()
 drop_group = pygame.sprite.Group()
 boss_group = pygame.sprite.Group()
+acid_group = pygame.sprite.Group()
 
 bg_img_list = []
 
@@ -76,6 +77,10 @@ player_img = pygame.transform.scale(player_img, (100, 150))
 
 enemy_img = pygame.image.load("assets/conversation/enemy.png").convert_alpha()
 enemy_img = pygame.transform.scale(enemy_img, (150, 150))
+
+# Grunge texture overlay
+grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
+grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH * ZOOM_VALUE, SCREEN_HEIGHT * ZOOM_VALUE))
 
 
 # sound effects

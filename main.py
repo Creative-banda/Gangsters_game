@@ -6,8 +6,6 @@ from settings import *
 from enemy import Enemy
 import numpy as np
 
-
-
 pygame.display.set_caption("Gangster Game")
 clock = pygame.time.Clock()
 
@@ -20,31 +18,27 @@ isfading = False
 starting_sound.play(-1)
 
 # FONTS
-
 font = pygame.font.Font('assets/font/Pricedown.otf', 25)
 big_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 50)
-# Level text with neon flicker
+
 level_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 80)  # Use a tech/street font
 start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
-conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 20)
+conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 
 # TRACKING LOCAL VARIABLES
-
-current_level = 3
-
+current_level = 0
 isDeathSoundPlay = False
 
- # Create a surface for the fade out
+# Create a surface for the fade out
 outro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 outro_surface.fill((220, 20, 60))
 
 # CREATE A SURFACE FOR THE FADE IN 
-
 intro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 intro_surface.fill((0, 200, 255))  # Neon Cyan
-
 fade_alpha = 255
+
 
 def create_map():
     global scaled_bg_images, bg_scroll_x, bg_scroll_y, current_level, ZOOM_VALUE, height, width
@@ -123,6 +117,10 @@ def create_map():
             
             elif cell == 60:  # Player
                 player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
+            
+            elif cell == 99:
+                acid = Acid(world_x, world_y)
+                acid_group.add(acid)
             elif cell == 100:
                 boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
                 boss_group.add(boss)
@@ -204,7 +202,57 @@ def show_Intro():
         time.sleep(sleep_time)
     pygame.mixer.music.stop()
     video.release()
+
+
+class Acid(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.x = x
+        self.y = y + 30 * ZOOM_VALUE
+        self.frame_index = 0
+        self.animation_cooldown = 200
+        self.images = []
+        self.last_damage_time = pygame.time.get_ticks()
+        
+        self.last_update_time = pygame.time.get_ticks()
+        for i in range(4):
+            self.image = pygame.image.load(f"assets/image/new_map/acid-{i}.png")
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, (CELL_SIZE + 10) * ZOOM_VALUE))
+            self.images.append(self.image)
+        self.image = self.images[self.frame_index]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
     
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+        if pygame.time.get_ticks() - self.last_update_time > self.animation_cooldown:
+            self.last_update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+            if self.frame_index >= 3:
+                self.frame_index = 0
+            self.image = self.images[self.frame_index]
+    
+    def check_collision(self, player):
+        if self.rect.colliderect(player.rect) and pygame.time.get_ticks() - self.last_damage_time > 1000:
+            print("Acid Damage")
+            player.health -= 40
+            if player.health <= 0:
+                player.alive = False
+            else:
+                player.InAir = True
+                player.vel_y = -15 * ZOOM_VALUE
+                player.update_animation("Hurt")
+                player.speed = 4
+            self.last_damage_time = pygame.time.get_ticks()
+            
+        
+
+
+    def draw(self):
+        screen.blit(self.image, self.rect)
+
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -319,7 +367,6 @@ class CollectItem(pygame.sprite.Sprite):
     
     def collect(self):
         if self.type == "health" and player.health < 100:
-            print(player.health)
             player.health = min(player.health + 20, 100)
             health_pickup_sound.play()
             show_achievement("Health +20")
@@ -546,9 +593,7 @@ def DisplayLevel():
         screen.blit(start_text, start_rect)
         
 
-        # Grunge texture overlay
-        grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
-        grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH * ZOOM_VALUE, SCREEN_HEIGHT * ZOOM_VALUE))
+
         grunge.set_alpha(30)
         screen.blit(grunge, (0, 0))
 
@@ -592,7 +637,7 @@ def DisplayLevel():
         pygame.display.update()
 
 
-def fade_outro():
+def death_outro():
     global fade_alpha, isDeathSoundPlay
     if fade_alpha < 255:  # Increase opacity over time
         fade_alpha += 2
@@ -615,6 +660,44 @@ def fade_intro():
         fade_alpha -= 5
     intro_surface.set_alpha(fade_alpha)
     screen.blit(intro_surface, (0, 0))
+
+
+def game_end():
+    outro_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    alpha = 0  # For fade-in effect
+    
+    pygame.time.delay(600)  # Delay before fade-in
+    
+    while alpha < 150:
+        screen.blit(grunge, (0, 0))  # Draw background image
+
+        # Apply a fade-in effect with a transparent overlay
+        outro_surface.fill((0, 0, 0, 255 - alpha))  
+        screen.blit(outro_surface, (0, 0))  
+
+        pygame.display.flip()  
+        pygame.time.delay(50)  
+        alpha += 5  
+        
+    
+    alpha = 0  # Reset alpha for fade-out effect
+
+    while True:
+        # Display outro messages
+        draw_text("The cybernetic enforcer is down...", 250, 100, conversation_font, color=(255, 50, 50))
+        draw_text("But the Syndicate's leader is still out there.", 200, 150, conversation_font, color=(255, 100, 100))
+        draw_text("Your fight isn't over... Not yet.", 250, 200, conversation_font, color=(255, 150, 150))
+
+        # "Thanks for Playing" message
+        draw_text("THANKS FOR PLAYING!", SCREEN_WIDTH // 2 - 320, SCREEN_HEIGHT // 2 + 50, big_font, color=(255, 50, 50))
+        draw_text("Created by Ahtesham", 50, SCREEN_HEIGHT // 2 + 120, big_font, color=(200, 200, 200))
+
+        pygame.display.flip()  # Update the screen
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN:
+                pygame.quit()
+                sys.exit()
 
 
 def get_color(current_value, max_value):
@@ -673,34 +756,45 @@ def display_HUD():
     pygame.draw.rect(screen, color, (40,130, current_width, 20))
     screen.blit(running_icon, (10, 130))
 
-def draw_text(text, x, y):
-    text_surface = conversation_font.render(text, True, (255, 255, 255))
-    screen.blit(text_surface, (x, y))
 
+def draw_text(text, x, y,font, color):
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, (x, y))
 
 
 player = Player()
 
-conversation = [
-    ("Enemy", "Target identified. Your termination is inevitable."),
-    ("Enemy", "Resistance is illogical. Surrender is not an option."),
-    ("Player", "Yet, here I stand. Looks like your calculations need an upgrade."),
-    ("Player", "Tell me, do you machines ever get tired of being wrong?"),
-    ("Enemy", "Your continued existence is an anomaly—one that ends now."),
-    ("Enemy", "Your organic limitations cannot compete with perfected design."),
-    ("Player", "Big words for a pile of malfunctioning circuits."),
-    ("Player", "But you and I both know—machines break."),
-    ("Enemy", "Incorrect. Machines evolve. Unlike you, I do not feel pain."),
-    ("Enemy", "I do not hesitate. I do not fail."),
-    ("Player", "And yet, the Syndicate still sent you after me."),
-    ("Player", "Guess even they don’t trust their hardware to finish the job."),
-    ("Enemy", "They sent me because you refuse to accept reality."),
-    ("Enemy", "But persistence is not survival. Only elimination remains."),
-]
-
 
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
+    
+    current_conversation = [
+        ("Enemy", "Target identified. Your termination is inevitable."),
+        ("Enemy", "Resistance is illogical. Surrender is not an option."),
+        ("Player", "Yet, here I stand. Looks like your calculations need an upgrade."),
+        ("Player", "Tell me, do you machines ever get tired of being wrong?"),
+        ("Enemy", "Your continued existence is an anomaly—one that ends now."),
+        ("Enemy", "Your organic limitations cannot compete with perfected design."),
+        ("Player", "Big words for a pile of malfunctioning circuits."),
+        ("Player", "But you and I both know—machines break."),
+        ("Enemy", "Incorrect. Machines evolve. Unlike you, I do not feel pain."),
+        ("Enemy", "I do not hesitate. I do not fail."),
+        ("Player", "And yet, the Syndicate still sent you after me."),
+        ("Player", "Guess even they don’t trust their hardware to finish the job."),
+        ("Enemy", "They sent me because you refuse to accept reality."),
+        ("Enemy", "But persistence is not survival. Only elimination remains."),
+    ]
+
+    mid_conversation = [
+        ("Enemy", "You are delaying the inevitable. Accept your fate."),
+        ("Player", "Fate? I prefer rewiring destiny.")
+    ]
+    
+    end_conversation = [
+        ("Enemy", "ERROR... SYSTEM... FAILING..."),
+        ("Player", "Tell your Syndicate friends I’m coming for them next.")
+    ]
+
 
     DisplayLevel()
     # play background music
@@ -708,6 +802,8 @@ def main():
     current_line = 0  # Track which line of conversation is being shown
     
     isConversation_Started = False # Check if conversation has started
+    isMidConversation_Started = False
+    isLastConversation_Started = False
     
     # Random Choice for Plane Selection
     values = ["drop", "enemy"]
@@ -743,7 +839,7 @@ def main():
                     PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     select_sound.play()
                     show_achievement("Laser Selected")
-                if event.key == pygame.K_SPACE and isConversation_Started and not Conversation_Ended:
+                if event.key == pygame.K_RETURN and isConversation_Started and not Conversation_Ended:
                     current_line += 1
        
         # Draw the background
@@ -752,11 +848,8 @@ def main():
         #Check Conversation Started
         if current_level == 4 and not isConversation_Started:
             for enemy in boss_group:
-                print(abs(player.rect.x - enemy.rect.x))
                 if abs(player.rect.x - enemy.rect.x) < 200:
                     isConversation_Started = True
-                    player.isActive = False
-                    player.update_animation("idle")
                     break
     
         # Draw the background image
@@ -793,6 +886,12 @@ def main():
                 collect_item.draw()
                 if player.rect.colliderect(collect_item.rect):
                     collect_item.collect()
+                    
+
+        for acid in acid_group:
+            acid.update()
+            acid.draw()            
+            acid.check_collision(player)
             
         # Update and draw the jumper
         for jumper in jumper_group:
@@ -836,10 +935,26 @@ def main():
                 boss.move(player, ground_group, bg_scroll_x, bg_scroll_y)
                 boss.draw(screen)
             if boss.health <= 0:
+                if not isLastConversation_Started:
+                    isConversation_Started = True
+                    Conversation_Ended = False
+                    current_conversation = end_conversation
+                    isLastConversation_Started = True
                 for enemy in enemy_group:
                     enemy.health = 0
                     enemy.isActive = False
                     enemy.update_animation("Dead")
+                    
+            elif boss.health <= 5000 :
+                if not isMidConversation_Started:
+                    print("Mid Conversation Started")
+                    
+                    enemy.isActive = False
+                    isConversation_Started = True
+                    Conversation_Ended = False
+                    current_conversation = mid_conversation
+                    isMidConversation_Started = True
+
 
         # Update and draw the enemy
         for enemy in enemy_group:
@@ -886,30 +1001,54 @@ def main():
         draw_achievement()
         
         if isConversation_Started and not Conversation_Ended:
-                
+            print("Conversation Started")
+    
+            player.isActive = False
+            player.update_animation("idle")
+            
             # Display Conversation
-            if current_line < len(conversation):
-                speaker, text = conversation[current_line]            
-                # Show character image
+            if current_line < len(current_conversation):
+                speaker, text = current_conversation[current_line]
+
+                # --- UI Enhancements ---
+
+                # Semi-transparent background for the dialogue box
+                dialogue_box = pygame.Surface((SCREEN_WIDTH, 150), pygame.SRCALPHA)  # Allows transparency
+                dialogue_box.fill((20, 20, 20, 200))  # Dark background with 200 alpha (transparency)
+                screen.blit(dialogue_box, (0, SCREEN_HEIGHT - 150))
+
+                # Border for the dialogue box
+                pygame.draw.rect(screen, (255, 50, 50), (10, SCREEN_HEIGHT - 145, SCREEN_WIDTH - 20, 140), 3, border_radius=15)  
+
+                # Display Character Image
                 if speaker == "Player":
-                    screen.blit(player_img, (0, SCREEN_HEIGHT - 130))  # Left side
-                    draw_text(text, 70, SCREEN_HEIGHT - 50)    
+                    screen.blit(player_img, (10, SCREEN_HEIGHT - 130))  # Left side
+
+                    # Display text slightly shifted for better readability
+                    draw_text(text, 100, SCREEN_HEIGHT - 110,conversation_font , color=(255, 255, 255))
+                
                 else:
-                    screen.blit(enemy_img, (SCREEN_WIDTH - 130, SCREEN_HEIGHT - 130))  # Right side
-                    draw_text(text, 10, SCREEN_HEIGHT - 50)    
+                    screen.blit(enemy_img, (SCREEN_WIDTH - 140, SCREEN_HEIGHT - 130))  # Right side
+
+                    # Align text for enemy
+                    draw_text(text, 30, SCREEN_HEIGHT - 110,conversation_font , color=(200, 200, 200))  
+
             else:
                 Conversation_Ended = True
                 for enemy in boss_group:
                     enemy.isActive = True
-                player.isActive = True
+                current_line = 0
+                if current_conversation != end_conversation:
+                    player.isActive = True
+                else:
+                    game_end()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+
        
-        
-        
         # Display FPS in the Screen
         fps = str(int(clock.get_fps()))
         fps_text = font.render(f"FPS: {fps}", True, WHITE)
@@ -919,7 +1058,7 @@ def main():
             screen.blit(key_image, (720, 20))
         
         if not player.alive:
-            fade_outro()
+            death_outro()
             if not isDeathSoundPlay:
                 # fade out the background music
                 pygame.mixer.Sound.stop(bg_music)
