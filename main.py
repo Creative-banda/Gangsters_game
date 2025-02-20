@@ -43,6 +43,8 @@ fade_alpha = 255
 def create_map():
     global scaled_bg_images, bg_scroll_x, bg_scroll_y, current_level, ZOOM_VALUE, height, width
     
+    reset_sprites()
+    
     # Load the level 1 as json file 
     with open(f"assets/level_{current_level}.json") as file:
         maze_layout = json.load(file)
@@ -64,8 +66,6 @@ def create_map():
     
     scaled_bg_images = [pygame.transform.scale(bg_img, (width * CELL_SIZE // 4* ZOOM_VALUE, height * CELL_SIZE // 3 * ZOOM_VALUE)) for bg_img in bg_img_list]
 
-    
-    
     
     # First create all ground tiles without any offset
     for y, row in enumerate(maze_layout):
@@ -120,6 +120,7 @@ def create_map():
             
             elif cell == 99:
                 acid = Acid(world_x, world_y)
+                print("Acid Created")
                 acid_group.add(acid)
             elif cell == 100:
                 boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
@@ -235,18 +236,23 @@ class Acid(pygame.sprite.Sprite):
             self.image = self.images[self.frame_index]
     
     def check_collision(self, player):
-        if self.rect.colliderect(player.rect) and pygame.time.get_ticks() - self.last_damage_time > 1000:
-            print("Acid Damage")
-            player.health -= 40
-            if player.health <= 0:
-                player.alive = False
-            else:
-                player.InAir = True
-                player.vel_y = -15 * ZOOM_VALUE
-                player.update_animation("Hurt")
-                player.speed = 4
-            self.last_damage_time = pygame.time.get_ticks()
-            
+        current_time = pygame.time.get_ticks()
+        
+        if self.rect.colliderect(player.rect):
+
+            if current_time - self.last_damage_time > 2000:
+                self.last_damage_time = current_time  # Update before dealing damage
+                print("Acid Damage")
+                
+                player.health -= 20
+                if player.health <= 0:
+                    player.alive = False
+                else:
+                    player.InAir = True
+                    player.vel_y = -15 * ZOOM_VALUE
+                    player.update_animation("Hurt")
+                    player.speed = 4
+
         
 
 
@@ -257,29 +263,53 @@ class Acid(pygame.sprite.Sprite):
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load("assets/image/new_map/exit.png")
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 * ZOOM_VALUE, CELL_SIZE * ZOOM_VALUE))
-        self.rect = self.image.get_rect()
         self.x = x
         self.y = y
+        self.images = []
+        self.playerTouch = False
+        self.frame_index = 0
+        self.last_update_time = pygame.time.get_ticks()
+        self.animation_cooldown = 200
+        self.animation_complete = False
+        for i in range(6):
+            self.image = pygame.image.load(f"assets/image/new_map/exit-{i}.png")
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE // 2 * ZOOM_VALUE, CELL_SIZE * ZOOM_VALUE))
+            self.images.append(self.image)
+        
+        self.image = self.images[self.frame_index]
+        self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y - CELL_SIZE)
     
     def update(self, bg_scroll_x, bg_scroll_y):
+
         self.rect.x = self.x - bg_scroll_x
         self.rect.y = self.y - bg_scroll_y
+        if self.playerTouch and pygame.time.get_ticks() - self.last_update_time > self.animation_cooldown and self.animation_complete == False:
+            self.last_update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+            if self.frame_index >= 5:
+                self.animation_complete = True
+                self.frame_index = 5
+            self.image = self.images[self.frame_index]
     
     def checkCollision(self, player):
+
         if self.rect.colliderect(player.rect) and player.has_key:
             player.has_key = False
+            player.isActive = False
+            player.update_animation("idle")
+            self.playerTouch = True
             
+        if self.animation_complete:
             # Display A Level Complete for few second then move to next level
-            for i in range(150):
+            for _ in range(150):
                 screen.fill((57, 255, 20))
                 text = big_font.render("LEVEL COMPLETE", True, WHITE)
                 text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
                 screen.blit(text, text_rect)
                 pygame.display.flip()
                 clock.tick(60)
+            player.isActive = True
             DisplayLevel()
     
     def draw(self):
@@ -623,14 +653,6 @@ def DisplayLevel():
                 pygame.display.update()
                 pygame.time.delay(50)
             starting_sound.stop()
-            bullet_group.empty()
-            ground_group.empty()
-            enemy_group.empty()
-            collect_item_group.empty()
-            jumper_group.empty()
-            exit_group.empty()
-            grass_group.empty()
-            ammo_group.empty()
             create_map()
             break
 
@@ -765,6 +787,21 @@ def draw_text(text, x, y,font, color):
 player = Player()
 
 
+def reset_sprites():
+    # Reset Sprite Groups
+    bullet_group.empty()
+    ground_group.empty()
+    enemy_group.empty()
+    collect_item_group.empty()
+    collect_item_group.empty()
+    jumper_group.empty()
+    exit_group.empty()
+    grass_group.empty()
+    acid_group.empty()
+    boss_group.empty()
+    drop_group.empty()
+    ammo_group.empty()
+
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
     
@@ -794,6 +831,8 @@ def main():
         ("Enemy", "ERROR... SYSTEM... FAILING..."),
         ("Player", "Tell your Syndicate friends I’m coming for them next.")
     ]
+
+    
 
 
     DisplayLevel()
@@ -1073,16 +1112,6 @@ def main():
                 bg_scroll_x = 0
                 bg_scroll_y = 0
                 death_sound.stop()
-                
-                # Reset Sprite Groups
-                bullet_group.empty()
-                ground_group.empty()
-                enemy_group.empty()
-                collect_item_group.empty()
-                collect_item_group.empty()
-                jumper_group.empty()
-                exit_group.empty()
-                grass_group.empty()
                 has_smg = player.isSmg
                 has_laser = player.isLaser
                 

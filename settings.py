@@ -188,7 +188,7 @@ BULLET_INFO = {
     "remaining": 20,
     "mag_size": 20,
     "bullet_speed": 20,
-    "cooldown" : 300
+    "cooldown" : 100
 },
 "smg": {
     "total": 100,
