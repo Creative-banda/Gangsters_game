@@ -27,7 +27,7 @@ conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 
 # TRACKING LOCAL VARIABLES
-current_level = 3
+current_level = 0
 isDeathSoundPlay = False
 
 # Create a surface for the fade out
@@ -712,7 +712,7 @@ def game_end():
 
         # "Thanks for Playing" message
         draw_text("THANKS FOR PLAYING!", SCREEN_WIDTH // 2 - 320, SCREEN_HEIGHT // 2 + 50, big_font, color=(255, 50, 50))
-        draw_text("Created by Ahtesham", 50, SCREEN_HEIGHT // 2 + 120, big_font, color=(200, 200, 200))
+        draw_text("Created by Orchids", 50, SCREEN_HEIGHT // 2 + 120, big_font, color=(200, 200, 200))
 
         pygame.display.flip()  # Update the screen
 
@@ -792,7 +792,6 @@ def reset_sprites():
     bullet_group.empty()
     ground_group.empty()
     enemy_group.empty()
-    collect_item_group.empty()
     collect_item_group.empty()
     jumper_group.empty()
     exit_group.empty()
