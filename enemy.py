@@ -66,6 +66,8 @@ class Enemy(pygame.sprite.Sprite):
         self.move_counter = 0
         self.idling = False
         self.last_bullet_time = pygame.time.get_ticks()
+
+        # Boss specific attributes
         
         self.last_player_x = x
         self.attack_index = 0 

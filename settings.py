@@ -52,6 +52,8 @@ plane_group = pygame.sprite.Group()
 drop_group = pygame.sprite.Group()
 boss_group = pygame.sprite.Group()
 acid_group = pygame.sprite.Group()
+bomb_group = pygame.sprite.Group()
+explosion_group = pygame.sprite.Group()
 
 bg_img_list = []
 
@@ -83,6 +85,9 @@ enemy_img = pygame.transform.scale(enemy_img, (150, 150))
 grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
 grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH * ZOOM_VALUE, SCREEN_HEIGHT * ZOOM_VALUE))
 
+bomb_image = pygame.image.load("assets/image/background/bomb.png").convert_alpha()
+bomb_image = pygame.transform.scale(bomb_image, (20 * ZOOM_VALUE, 30 * ZOOM_VALUE))
+
 
 # sound effects
 
@@ -98,6 +103,7 @@ starting_sound = pygame.mixer.Sound("assets/sfx/starting_music.mp3")
 death_sound = pygame.mixer.Sound("assets/sfx/death.mp3")
 laser_sound = pygame.mixer.Sound("assets/sfx/laser.mp3")
 smg_sound = pygame.mixer.Sound("assets/sfx/smg_shot.mp3")
+explosion_sound = pygame.mixer.Sound("assets/sfx/explosion_sound.mp3")
 
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns

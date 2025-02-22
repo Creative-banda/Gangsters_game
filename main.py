@@ -512,12 +512,14 @@ class Plane(pygame.sprite.Sprite):
         if self.rect.centerx >= player.rect.centerx - 50 and not self.isDropped:
             self.isDropped = True
             if self.type == "enemy":
-                
                 enemy = Enemy(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y - (CELL_SIZE * ZOOM_VALUE), random.choice(["normal", "strong"]), 0.5)
                 enemy_group.add(enemy)
             elif self.type == "drop":
                 drop = Drop(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y)
                 drop_group.add(drop)
+            elif self.type == "bomb":
+                bomb = Bomb(self.rect.x + bg_scroll_x , self.rect.y + bg_scroll_y) 
+                bomb_group.add(bomb)
 
     
     def draw(self):
@@ -583,6 +585,94 @@ class Drop(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
+
+class Bomb(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+
+        self.x = x
+        self.y = y
+        
+        self.image = bomb_image
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
+        self.vel_y = 0  # Falling speed
+
+    def update(self, ground_group):
+        # Adjust rendering position
+        self.rect.x = self.x - bg_scroll_x
+        self.vel_y += 0.06  # Gravity effect
+        self.y += self.vel_y  # Update actual y position
+
+        # Update rectangle position before checking collision
+        self.rect.y = self.y - bg_scroll_y
+        for ground in ground_group:
+            if self.rect.colliderect(ground.rect):
+                self.rect.bottom = ground.rect.top
+                self.kill()
+                explosion = Explosion(self.rect.x + bg_scroll_x, self.rect.y + bg_scroll_y - (CELL_SIZE * ZOOM_VALUE))
+                explosion_group.add(explosion)
+
+    def draw(self):
+        screen.blit(self.image, self.rect)
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.frame_index = 0
+        self.animation_cooldown = 100
+        self.last_update_time = pygame.time.get_ticks()
+        self.isAudioPlay = False
+        self.damage_given = False
+        self.images = []
+        for i in range(0,15):
+            self.image = pygame.image.load(f"assets/image/explosion/explosion-{i}.png")
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE * 2 * ZOOM_VALUE, CELL_SIZE * 2 * ZOOM_VALUE))
+            self.images.append(self.image)
+        self.image = self.images[self.frame_index]
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
+    
+    def update(self):
+        self.rect.x = self.x - bg_scroll_x
+        self.rect.y = self.y - bg_scroll_y
+        if pygame.time.get_ticks() - self.last_update_time > self.animation_cooldown:
+            self.last_update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+            self.image = self.images[self.frame_index]
+        if not self.isAudioPlay:
+            explosion_sound.play()
+            self.isAudioPlay = True
+        if not self.damage_given:
+            self.check_collision()
+            self.damage_given = True
+        
+        if self.frame_index >= 14:
+            self.kill()
+
+    
+    def check_collision(self):
+        for enemy in enemy_group:
+            if self.rect.colliderect(enemy.rect):
+                enemy.take_damage(100)
+        if self.rect.colliderect(player.rect):
+            player.health -= 50
+            if player.health <= 0:
+                player.alive = False
+            else:
+                player.update_animation("Hurt")
+            player.update_animation("Hurt")
+        for boss in boss_group:
+            if self.rect.colliderect(boss.rect):
+                boss.take_damage(100)
+
+
+    def draw(self):
+        screen.blit(self.image, self.rect)
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
 def DisplayLevel():
     global current_level
@@ -857,10 +947,10 @@ def main():
     Conversation_Ended = False
     
     # Random Choice for Plane Selection
-    values = ["drop", "enemy"]
+    values = ["drop", "enemy","bomb"]
 
     # List of probabilities corresponding to each value
-    probabilities = [0.7, 0.3]
+    probabilities = [0.1, 0.1, 0.8]
 
     while True:
         for event in pygame.event.get():
@@ -1044,6 +1134,14 @@ def main():
             for drop in drop_group:
                 drop.update()
                 drop.draw(screen)
+            
+            for bomb in bomb_group:
+                bomb.update(ground_group)
+                bomb.draw()
+            
+            for explosion in explosion_group:
+                explosion.update()
+                explosion.draw()
 
         
         # Display HUD
