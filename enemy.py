@@ -383,7 +383,7 @@ class Enemy(pygame.sprite.Sprite):
         
         self.isAttacking = True
         if player.rect.colliderect(self.rect) and self.frame_index >= 3 :
-            player.health -= 1
+            player.health -= 2
             if player.health <= 0:
                 player.alive = False
             else:

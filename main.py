@@ -27,7 +27,7 @@ conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 
 # TRACKING LOCAL VARIABLES
-current_level = 0
+current_level = 3
 isDeathSoundPlay = False
 
 # Create a surface for the fade out
@@ -712,7 +712,7 @@ def game_end():
 
         # "Thanks for Playing" message
         draw_text("THANKS FOR PLAYING!", SCREEN_WIDTH // 2 - 320, SCREEN_HEIGHT // 2 + 50, big_font, color=(255, 50, 50))
-        draw_text("Created by Orchids", 50, SCREEN_HEIGHT // 2 + 120, big_font, color=(200, 200, 200))
+        draw_text("Created by Ahtesham", 50, SCREEN_HEIGHT // 2 + 120, big_font, color=(200, 200, 200))
 
         pygame.display.flip()  # Update the screen
 
@@ -800,35 +800,46 @@ def reset_sprites():
     boss_group.empty()
     drop_group.empty()
     ammo_group.empty()
+    plane_group.empty()
 
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
     
     current_conversation = [
-        ("Enemy", "Target identified. Your termination is inevitable."),
-        ("Enemy", "Resistance is illogical. Surrender is not an option."),
-        ("Player", "Yet, here I stand. Looks like your calculations need an upgrade."),
-        ("Player", "Tell me, do you machines ever get tired of being wrong?"),
-        ("Enemy", "Your continued existence is an anomaly—one that ends now."),
-        ("Enemy", "Your organic limitations cannot compete with perfected design."),
-        ("Player", "Big words for a pile of malfunctioning circuits."),
-        ("Player", "But you and I both know—machines break."),
-        ("Enemy", "Incorrect. Machines evolve. Unlike you, I do not feel pain."),
-        ("Enemy", "I do not hesitate. I do not fail."),
-        ("Player", "And yet, the Syndicate still sent you after me."),
-        ("Player", "Guess even they don’t trust their hardware to finish the job."),
-        ("Enemy", "They sent me because you refuse to accept reality."),
-        ("Enemy", "But persistence is not survival. Only elimination remains."),
+        ("Player", "What the hell... who are you?"),
+        ("Enemy", "Someone who's been watching you for a long time."),
+        ("Player", "Stay back!"),
+        ("Enemy", "Interesting. Most people run when they see me. "),
+        ("Enemy", "But you... you're different."),
+        ("Player", "Yeah, well, I've dealt with my share of thugs."),
+        ("Enemy", "Thugs? Oh, you poor soul. You have no idea what you're facing."),
+        ("Player", "Maybe not. But I'm still standing."),
+        ("Enemy", "For now. I can hear your heartbeat racing."),
+        ("Enemy", "Smell the adrenaline in your blood."),
+        ("Player", "You're not human, are you?"),
+        ("Enemy", "Human? I've evolved beyond such... limitations."),
+        ("Enemy", "I am the future walking. And you?"),
+        ("Enemy", " You're just another relic to be... retired."),
+        ("Player", "I've taken down plenty of 'futures' before."),
+        ("Enemy", "Have you? That scar on your neck suggests otherwise."),
+        ("Enemy", "You survived our last encounter by pure luck."),
+        ("Enemy", "Tonight, luck's not on the menu."),
+        ("Player", "Wait... that was you? The attack at the marina?"),
+        ("Enemy", "Just the first of many gifts I've left you."),
+        ("Enemy", " Consider them... practice rounds.")
     ]
 
     mid_conversation = [
-        ("Enemy", "You are delaying the inevitable. Accept your fate."),
-        ("Player", "Fate? I prefer rewiring destiny.")
+        ("Enemy", "You're fighting well... for obsolete hardware."),
+        ("Player", "And you're bleeding well... for a 'superior being'."),
+        ("Enemy", "Merely an inconvenience. Unlike your... condition.")
     ]
-    
+
     end_conversation = [
-        ("Enemy", "ERROR... SYSTEM... FAILING..."),
-        ("Player", "Tell your Syndicate friends I’m coming for them next.")
+        ("Enemy", "This... isn't... possible..."),
+        ("Player", "Next time, try evolving a backup plan."),
+        ("Enemy", "They'll... send... more..."),
+        ("Player", "Tell them I'll come for them"),
     ]
 
     
@@ -842,13 +853,14 @@ def main():
     isConversation_Started = False # Check if conversation has started
     isMidConversation_Started = False
     isLastConversation_Started = False
+
+    Conversation_Ended = False
     
     # Random Choice for Plane Selection
     values = ["drop", "enemy"]
 
     # List of probabilities corresponding to each value
     probabilities = [0.7, 0.3]
-    Conversation_Ended = False
 
     while True:
         for event in pygame.event.get():
@@ -865,8 +877,8 @@ def main():
                 if event.key == pygame.K_1 and player.isRifle:
                     player.current_gun = "rifle"
                     select_sound.play()
-                    PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                     show_achievement("Rifle Selected")
+                    PLAYER_ANIMATION["Shot"]['animation_cooldown'] = BULLET_INFO[player.current_gun]['cooldown']
                 if event.key == pygame.K_2 and player.isSmg:
                     player.current_gun = "smg"
                     select_sound.play()
@@ -985,9 +997,10 @@ def main():
                     
             elif boss.health <= 5000 :
                 if not isMidConversation_Started:
-                    print("Mid Conversation Started")
                     
-                    enemy.isActive = False
+                    boss.isActive = False
+                    for enemy in enemy_group:
+                        enemy.isActive = False
                     isConversation_Started = True
                     Conversation_Ended = False
                     current_conversation = mid_conversation
@@ -1111,6 +1124,12 @@ def main():
                 bg_scroll_x = 0
                 bg_scroll_y = 0
                 death_sound.stop()
+                isConversation_Started = False # Check if conversation has started
+                isMidConversation_Started = False
+                isLastConversation_Started = False
+                
+                Conversation_Ended = False
+                current_line = 0
                 has_smg = player.isSmg
                 has_laser = player.isLaser
                 

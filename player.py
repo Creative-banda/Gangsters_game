@@ -26,8 +26,8 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.current_gun = "rifle"
         self.isRifle = True
-        self.isLaser = False
-        self.isSmg = False
+        self.isLaser = True
+        self.isSmg = True
         self.sprint_value = 200
         self.last_sprint_update = pygame.time.get_ticks()
         self.isActive = True

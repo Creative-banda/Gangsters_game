@@ -79,6 +79,7 @@ enemy_img = pygame.image.load("assets/conversation/enemy.png").convert_alpha()
 enemy_img = pygame.transform.scale(enemy_img, (150, 150))
 
 # Grunge texture overlay
+
 grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
 grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH * ZOOM_VALUE, SCREEN_HEIGHT * ZOOM_VALUE))
 
@@ -97,7 +98,6 @@ starting_sound = pygame.mixer.Sound("assets/sfx/starting_music.mp3")
 death_sound = pygame.mixer.Sound("assets/sfx/death.mp3")
 laser_sound = pygame.mixer.Sound("assets/sfx/laser.mp3")
 smg_sound = pygame.mixer.Sound("assets/sfx/smg_shot.mp3")
-
 
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns
@@ -188,7 +188,7 @@ BULLET_INFO = {
     "remaining": 20,
     "mag_size": 20,
     "bullet_speed": 20,
-    "cooldown" : 100
+    "cooldown" : 200
 },
 "smg": {
     "total": 100,
