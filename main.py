@@ -27,7 +27,7 @@ conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 
 # TRACKING LOCAL VARIABLES
-current_level = 3
+current_level = 0
 isDeathSoundPlay = False
 
 # Create a surface for the fade out
@@ -125,7 +125,7 @@ def create_map():
             elif cell == 100:
                 boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
                 boss_group.add(boss)
-                
+           
 
 def show_achievement(text, duration=1000):
     """Displays an achievement message at the top of the screen."""
@@ -617,6 +617,7 @@ class Bomb(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
+
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -673,6 +674,7 @@ class Explosion(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+
 
 def DisplayLevel():
     global current_level
@@ -892,6 +894,7 @@ def reset_sprites():
     ammo_group.empty()
     plane_group.empty()
 
+
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
     
@@ -950,7 +953,7 @@ def main():
     values = ["drop", "enemy","bomb"]
 
     # List of probabilities corresponding to each value
-    probabilities = [0.1, 0.1, 0.8]
+    probabilities = [0.6, 0.2, 0.2]
 
     while True:
         for event in pygame.event.get():
@@ -1243,6 +1246,7 @@ def main():
         # Update the display
         pygame.display.flip()
         clock.tick(FPS)
+
 
 if __name__ == "__main__":
     show_Intro()
