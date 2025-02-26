@@ -27,7 +27,7 @@ conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 
 # TRACKING LOCAL VARIABLES
-current_level = 3
+current_level = 0
 isDeathSoundPlay = False
 
 # Create a surface for the fade out
@@ -125,7 +125,7 @@ def create_map():
             elif cell == 100:
                 boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
                 boss_group.add(boss)
-                
+           
 
 def show_achievement(text, duration=1000):
     """Displays an achievement message at the top of the screen."""
@@ -951,7 +951,7 @@ def main():
     values = ["drop", "enemy","bomb"]
 
     # List of probabilities corresponding to each value
-    probabilities = [0.1, 0.1, 0.8]
+    probabilities = [0.6, 0.2, 0.2]
 
     while True:
         for event in pygame.event.get():
