@@ -371,7 +371,7 @@ class CollectItem(pygame.sprite.Sprite):
             if self.type == "smg" or self.type == "laser":
                 self.image = pygame.transform.scale(self.image, ((CELL_SIZE + 30) * ZOOM_VALUE, (CELL_SIZE + 30)  * ZOOM_VALUE))        
             else:
-                self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, (CELL_SIZE + 10)  * ZOOM_VALUE ))
+                self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE * ZOOM_VALUE ))
             self.images.append(self.image)
         
         
@@ -617,6 +617,7 @@ class Bomb(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
+
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -673,6 +674,7 @@ class Explosion(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+
 
 def DisplayLevel():
     global current_level
@@ -892,6 +894,7 @@ def reset_sprites():
     ammo_group.empty()
     plane_group.empty()
 
+
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
     
@@ -933,8 +936,6 @@ def main():
     ]
 
     
-
-
     DisplayLevel()
     # play background music
     bg_music.play(-1)
@@ -1243,6 +1244,7 @@ def main():
         # Update the display
         pygame.display.flip()
         clock.tick(FPS)
+
 
 if __name__ == "__main__":
     show_Intro()
