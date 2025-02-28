@@ -59,30 +59,30 @@ bg_img_list = []
 
 # images
 
-bullet_image = pygame.image.load("assets/image/bullets/bullet.png").convert_alpha()
+bullet_image = pygame.image.load("assets/image/bullets/bullet.png")
 for i in range(2,6):
-    background_image = pygame.image.load(f"assets/image/background/{i}.png").convert_alpha()
+    background_image = pygame.image.load(f"assets/image/background/{i}.png")
     bg_img_list.append(background_image)
-heart_image = pygame.image.load("assets/icons/heart.png").convert_alpha()
-bullet_icon = pygame.image.load("assets/icons/bullet.png").convert_alpha()
-remaining_bullet_icon = pygame.image.load("assets/icons/remaining_bullet.png").convert_alpha()
+heart_image = pygame.image.load("assets/icons/heart.png")
+bullet_icon = pygame.image.load("assets/icons/bullet.png")
+remaining_bullet_icon = pygame.image.load("assets/icons/remaining_bullet.png")
 remaining_bullet_icon = pygame.transform.scale(remaining_bullet_icon, (25,25))
-running_icon = pygame.image.load("assets/icons/running.png").convert_alpha()
+running_icon = pygame.image.load("assets/icons/running.png")
 running_icon = pygame.transform.scale(running_icon, (25,25))
-key_image = pygame.image.load("assets/image/collect_item/key.png").convert_alpha()
+key_image = pygame.image.load("assets/image/collect_item/key.png")
 key_image = pygame.transform.scale(key_image, (45,35))
-drop_image = pygame.image.load("assets/image/background/drop.png").convert_alpha()
+drop_image = pygame.image.load("assets/image/background/drop.png")
 
 # Conversation Images
-player_img = pygame.image.load("assets/conversation/player.png").convert_alpha()
+player_img = pygame.image.load("assets/conversation/player.png")
 player_img = pygame.transform.scale(player_img, (100, 150))
 
-enemy_img = pygame.image.load("assets/conversation/enemy.png").convert_alpha()
+enemy_img = pygame.image.load("assets/conversation/enemy.png")
 enemy_img = pygame.transform.scale(enemy_img, (150, 150))
 
 # Grunge texture overlay
 
-grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha()
+grunge = pygame.image.load("assets/image/background/bg_image.png")
 grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH * ZOOM_VALUE, SCREEN_HEIGHT * ZOOM_VALUE))
 
 bomb_image = pygame.image.load("assets/image/background/bomb.png").convert_alpha()

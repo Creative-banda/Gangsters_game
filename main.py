@@ -367,7 +367,7 @@ class CollectItem(pygame.sprite.Sprite):
         self.images = []
         
         for i in range(self.max_frame_index):
-            self.image = pygame.image.load(f"assets/image/collect_item/{self.type}/{self.type}-{i}.png").convert_alpha()
+            self.image = pygame.image.load(f"assets/image/collect_item/{self.type}/{self.type}-{i}.png")
             if self.type == "smg" or self.type == "laser":
                 self.image = pygame.transform.scale(self.image, ((CELL_SIZE + 30) * ZOOM_VALUE, (CELL_SIZE + 30)  * ZOOM_VALUE))        
             else:
