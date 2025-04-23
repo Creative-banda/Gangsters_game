@@ -31,12 +31,15 @@ NEON_CYAN = (0, 255, 255)
 NEON_PINK = (255, 105, 180)
 NEON_YELLOW = (255, 255, 0)
 
-# Achievement variables
-achievement_text = ""
-achievement_alpha = 0  # Transparency (0 = invisible, 255 = fully visible)
-achievement_timer = 0
 
 
+# FONTS
+font = pygame.font.Font('assets/font/Pricedown.otf', 25)
+big_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 50)
+
+level_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 80)  # Use a tech/street font
+start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
+conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 # All Sprite
 bullet_group = pygame.sprite.Group()
@@ -108,47 +111,14 @@ explosion_sound = pygame.mixer.Sound("assets/sfx/explosion_sound.mp3")
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns
 PLAYER_ANIMATION = {
-"idle": {
-    "frame_count": 6,  # Number of frames
-    "image_path": "assets/image/player/Idle.png",  # Sprite sheet path,
-    "animation_cooldown": 70
-},
-"Run": {
-    "frame_count": 10,  # Number of frames
-    "image_path": "assets/image/player/Run.png",  # Sprite sheet path
-    "animation_cooldown": 70
-},
-"Shot": {
-    "frame_count": 4,  # Number of frames
-    "image_path": "assets/image/player/Shot.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Walk": {
-    "frame_count": 10,  # Number of frames
-    "image_path": "assets/image/player/Walk.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Jump": {
-    "frame_count": 10,  # Number of frames
-    "image_path": "assets/image/player/Jump.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-
-"Reload": {
-    "frame_count": 17,  # Number of frames
-    "image_path": "assets/image/player/Recharge.png",  # Sprite sheet path
-    "animation_cooldown": 70
-},
-"Hurt": {
-    "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/player/Hurt.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Dead": {
-    "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/player/Dead.png",  # Sprite sheet path
-    "animation_cooldown": 150
-},
+    "idle": {"frame_count": 6, "image_path": "assets/image/player/Idle.png", "animation_cooldown": 70},
+    "Run": {"frame_count": 10, "image_path": "assets/image/player/Run.png", "animation_cooldown": 70},
+    "Shot": {"frame_count": 4, "image_path": "assets/image/player/Shot.png", "animation_cooldown": 100},
+    "Walk": {"frame_count": 10, "image_path": "assets/image/player/Walk.png", "animation_cooldown": 100},
+    "Jump": {"frame_count": 10, "image_path": "assets/image/player/Jump.png", "animation_cooldown": 100},
+    "Reload": {"frame_count": 17, "image_path": "assets/image/player/Recharge.png", "animation_cooldown": 70},
+    "Hurt": {"frame_count": 5, "image_path": "assets/image/player/Hurt.png", "animation_cooldown": 100},
+    "Dead": {"frame_count": 5, "image_path": "assets/image/player/Dead.png", "animation_cooldown": 150},
 }
 
 ENEMIES = {
@@ -182,25 +152,7 @@ ENEMIES = {
 # Player Gun Info
 
 BULLET_INFO = {
-"rifle": {
-    "total": 30,
-    "remaining": 20,
-    "mag_size": 20,
-    "bullet_speed": 20,
-    "cooldown" : 100
-},
-"laser": {
-    "total": 30,
-    "remaining": 20,
-    "mag_size": 20,
-    "bullet_speed": 20,
-    "cooldown" : 200
-},
-"smg": {
-    "total": 100,
-    "remaining": 30,
-    "mag_size": 30,
-    "bullet_speed": 20,
-    "cooldown" : 5
-}
+"rifle": { "total": 30, "remaining": 20, "mag_size": 20, "bullet_speed": 20, "cooldown" : 100 },
+"laser": { "total": 30, "remaining": 20, "mag_size": 20, "bullet_speed": 20, "cooldown" : 200 },
+"smg": { "total": 100, "remaining": 30, "mag_size": 30, "bullet_speed": 20, "cooldown" : 5 }
 }

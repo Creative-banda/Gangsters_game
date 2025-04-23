@@ -17,13 +17,10 @@ isfading = False
 # PLAY BACKGROUND MUSIC
 starting_sound.play(-1)
 
-# FONTS
-font = pygame.font.Font('assets/font/Pricedown.otf', 25)
-big_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 50)
-
-level_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 80)  # Use a tech/street font
-start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
-conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
+# Achievement variables
+achievement_text = ""
+achievement_alpha = 0  # Transparency (0 = invisible, 255 = fully visible)
+achievement_timer = 0
 
 
 # TRACKING LOCAL VARIABLES
@@ -64,7 +61,10 @@ def create_map():
 
     # Load the background image
     
-    scaled_bg_images = [pygame.transform.scale(bg_img, (width * CELL_SIZE // 4* ZOOM_VALUE, height * CELL_SIZE // 3 * ZOOM_VALUE)) for bg_img in bg_img_list]
+    scaled_bg_images = []
+    for bg_img in bg_img_list:
+        scaled_bg_img = pygame.transform.scale(bg_img, (width * CELL_SIZE // 4 * ZOOM_VALUE, height * CELL_SIZE // 3 * ZOOM_VALUE))
+        scaled_bg_images.append(scaled_bg_img)
 
     
     # First create all ground tiles without any offset
@@ -120,7 +120,6 @@ def create_map():
             
             elif cell == 99:
                 acid = Acid(world_x, world_y)
-                print("Acid Created")
                 acid_group.add(acid)
             elif cell == 100:
                 boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
@@ -161,7 +160,7 @@ def show_Intro():
     fps = video.get(cv2.CAP_PROP_FPS)  # Keep as float to avoid precision errors
     frame_time = 1 / fps  # Time per frame
     try:
-        pygame.mixer.music.load(audio_path)  # Ensure it's in OGG format
+        pygame.mixer.music.load(audio_path) # Load the audio file
         pygame.mixer.music.play()
     except pygame.error as e:
         print(f"Error loading audio: {e}")
@@ -170,7 +169,6 @@ def show_Intro():
 
     # Check if video opened correctly
     if not video.isOpened():
-        print("Error: Could not open video.")
         exit()
     while running:
         start_time = time.time()  # Track time for accurate frame display
@@ -994,8 +992,6 @@ def main():
                     break
     
         # Draw the background image
-        # screen.blit(background_image, (width * CELL_SIZE -bg_scroll_x, height * CELL_SIZE - bg_scroll_y))
-        # screen.blit(background_image, (0 - bg_scroll_x , height * CELL_SIZE // 1.45 - bg_scroll_y ))
         
         for i, bg_img in enumerate(scaled_bg_images):
             screen.blit(bg_img, (i * 300 - (bg_scroll_x * 0.4) , height * CELL_SIZE // 1.46 - bg_scroll_y ))
@@ -1006,7 +1002,6 @@ def main():
         bg_scroll_y += y        
         player.update()
         player.draw(screen)
-        # print(bg_scroll_x, bg_scroll_y)
         
         player_x = player.rect.x 
         player_y = player.rect.y 
@@ -1070,7 +1065,6 @@ def main():
         for boss in boss_group:
             diff_x = abs(boss.x - bg_scroll_x - player_x)
             diff_y = abs(boss.y - bg_scroll_y - player_y)
-            # # print(diff_x, diff_y)
             if diff_x < 800 and diff_y < 600:
                 boss.update()
                 boss.move(player, ground_group, bg_scroll_x, bg_scroll_y)
@@ -1102,7 +1096,6 @@ def main():
         for enemy in enemy_group:
             diff_x = abs(enemy.x - bg_scroll_x - player_x)
             diff_y = abs(enemy.y - bg_scroll_y - player_y)
-            # # print(diff_x, diff_y)
             if diff_x < 800 and diff_y < 600:
                 enemy.update()
                 enemy.move(player, ground_group, bg_scroll_x, bg_scroll_y)
@@ -1115,10 +1108,6 @@ def main():
             if player.rect.colliderect(ammo.rect):
                 ammo.collect()
                 
-        # if bg_scroll_y > 1800:
-        #     player.alive = False
-        #     player.health = 0
-        
         # Spawn Random Plane In Level 4
         
         if current_level == 4 and Conversation_Ended:
@@ -1151,7 +1140,6 @@ def main():
         draw_achievement()
         
         if isConversation_Started and not Conversation_Ended:
-            print("Conversation Started")
     
             player.isActive = False
             player.update_animation("idle")
@@ -1213,9 +1201,10 @@ def main():
                 # fade out the background music
                 pygame.mixer.Sound.stop(bg_music)
                 isDeathSoundPlay = True
-                death_sound.play()      
+                death_sound.play() 
+                     
             # Look for the R key to restart the game
-            keys = pygame.key.get_pressed()
+            keys = pygame.key.get_pressed() 
             if keys[pygame.K_r]:
                 fade_alpha = 0
                 isDeathSoundPlay = False
