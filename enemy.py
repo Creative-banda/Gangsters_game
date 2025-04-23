@@ -1,5 +1,5 @@
 import pygame, random
-from settings import PLAYER_SIZE, CELL_SIZE, ENEMIES
+from settings import PLAYER_SIZE, CELL_SIZE, ENEMIES, scale_x, scale_y
 from player import Bullet, bullet_group
 
 
@@ -10,9 +10,9 @@ class Enemy(pygame.sprite.Sprite):
         
         self.animations = {}
         self.zoom_value = ZOOM_VALUE
-        self.size = 1 
+        self.size = 1
         
-        self.speed = 0.7
+        self.speed = 0.7 * scale_x
         
         self.max_health = 100
         self.isActive = True
@@ -21,7 +21,7 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 100
             self.shoot_frame = 5
             self.bullet_damage = 40
-            self.vision_length = 300 * self.zoom_value
+            self.vision_length = 300 * self.zoom_value * scale_x
             self.animation_dict =ENEMIES['NORMAL_ENEMY']
             self.type = "normal"
         elif enemy_type == "strong":
@@ -29,7 +29,7 @@ class Enemy(pygame.sprite.Sprite):
             self.max_health = 500
             self.shoot_frame = 3
             self.bullet_damage = 60
-            self.vision_length = 400 * self.zoom_value
+            self.vision_length = 400 * self.zoom_value * scale_x
             self.type = "strong"
             
             self.animation_dict = ENEMIES['HEAVY_ENEMY']
@@ -37,7 +37,7 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 10000
             self.punch_damage = 50
             self.animation_dict = ENEMIES['BOSS_ENEMY']
-            self.vision_length = 500 * self.zoom_value
+            self.vision_length = 500 * self.zoom_value * scale_x
             self.base_speed = 3
             self.size = 2
             self.type = "boss"
@@ -73,15 +73,15 @@ class Enemy(pygame.sprite.Sprite):
         self.attack_index = 0 
         
         # Create a rect in front of the enemy as enemy vision
-        self.vision_rect = pygame.Rect(self.x, self.y, self.vision_length, 50)
+        self.vision_rect = pygame.Rect(self.x, self.y, self.vision_length, 50 * scale_y) 
         self.vision_rect.center = self.rect.center
         
         # Create a health bar in the top of the enemy as health bar
         
-        self.health_bar_length = 50
+        self.health_bar_length = 50 * scale_x
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
-        self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5)
+        self.health_bar = pygame.Rect(self.rect.centerx , self.rect.y, self.health_bar_length, 5 * scale_y)
    
      
     def take_damage(self, damage):
@@ -156,10 +156,7 @@ class Enemy(pygame.sprite.Sprite):
                 frame = sprite_sheet.subsurface((x, y, cropped_width, cropped_height))
 
                 # Scale based on zoom value
-                frame = pygame.transform.scale(
-                    frame, 
-                    (int(cropped_width * self.zoom_value * self.size), int(cropped_height * self.zoom_value * self.size))
-                )
+                frame = pygame.transform.scale(frame, tuple(int(dim * self.zoom_value * self.size * 1.2) for dim in PLAYER_SIZE))
                 frames.append(frame)
 
             self.animations[action] = frames
@@ -282,7 +279,7 @@ class Enemy(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
         
         # pygame.draw.rect(screen, (0,255,0), self.rect, 1)
-        # pygame.draw.rect(screen, (255, 0, 0), self.vision_rect, 1)
+        pygame.draw.rect(screen, (255, 0, 0), self.vision_rect, 1)
 
         # Update health bar position
         self.health_bar.centerx = self.rect.centerx

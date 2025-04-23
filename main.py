@@ -63,7 +63,7 @@ def create_map():
     
     scaled_bg_images = []
     for bg_img in bg_img_list:
-        scaled_bg_img = pygame.transform.scale(bg_img, (width * CELL_SIZE // 4 * ZOOM_VALUE, height * CELL_SIZE // 3 * ZOOM_VALUE))
+        scaled_bg_img = pygame.transform.scale(bg_img, (width * CELL_SIZE // 4 * ZOOM_VALUE * scale_x, height * CELL_SIZE // 3 * ZOOM_VALUE * scale_y))
         scaled_bg_images.append(scaled_bg_img)
 
     
@@ -207,7 +207,7 @@ class Acid(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.x = x
-        self.y = y + 30 * ZOOM_VALUE
+        self.y = y + (30 * scale_y) * ZOOM_VALUE
         self.frame_index = 0
         self.animation_cooldown = 200
         self.images = []
@@ -216,7 +216,7 @@ class Acid(pygame.sprite.Sprite):
         self.last_update_time = pygame.time.get_ticks()
         for i in range(4):
             self.image = pygame.image.load(f"assets/image/new_map/acid-{i}.png")
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, (CELL_SIZE + 10) * ZOOM_VALUE))
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, (CELL_SIZE + (10 * scale_y)) * ZOOM_VALUE))
             self.images.append(self.image)
         self.image = self.images[self.frame_index]
         self.rect = self.image.get_rect()
@@ -367,9 +367,9 @@ class CollectItem(pygame.sprite.Sprite):
         for i in range(self.max_frame_index):
             self.image = pygame.image.load(f"assets/image/collect_item/{self.type}/{self.type}-{i}.png")
             if self.type == "smg" or self.type == "laser":
-                self.image = pygame.transform.scale(self.image, ((CELL_SIZE + 30) * ZOOM_VALUE, (CELL_SIZE + 30)  * ZOOM_VALUE))        
+                self.image = pygame.transform.scale(self.image, ((CELL_SIZE + (30 * scale_x)) * ZOOM_VALUE , (CELL_SIZE + (30 * scale_y))  * ZOOM_VALUE))        
             else:
-                self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE, CELL_SIZE * ZOOM_VALUE ))
+                self.image = pygame.transform.scale(self.image, (CELL_SIZE * ZOOM_VALUE , CELL_SIZE * ZOOM_VALUE))
             self.images.append(self.image)
         
         
@@ -423,7 +423,7 @@ class Ammo(pygame.sprite.Sprite):
         self.frame_index = 0
         self.gunammo = gunammo
         self.image = pygame.image.load(f"assets/image/collect_item/ammo/{self.gunammo}_{self.frame_index}.png")
-        self.image = pygame.transform.scale(self.image, (30 * ZOOM_VALUE,30 * ZOOM_VALUE))
+        self.image = pygame.transform.scale(self.image, (30 * ZOOM_VALUE * scale_x,30 * ZOOM_VALUE * scale_y))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y + CELL_SIZE // 2
@@ -447,7 +447,7 @@ class Ammo(pygame.sprite.Sprite):
             self.frame_index = 0
         
         self.image = pygame.image.load(f"assets/image/collect_item/ammo/{self.gunammo}_{self.frame_index}.png")
-        self.image = pygame.transform.scale(self.image, (30 * ZOOM_VALUE,30 * ZOOM_VALUE))
+        self.image = pygame.transform.scale(self.image, (30 * ZOOM_VALUE * scale_x,30 * ZOOM_VALUE * scale_y))
     
     
     def collect(self):
@@ -465,7 +465,7 @@ class Jumper(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("assets/image/new_map/jumper.png")
-        self.image = pygame.transform.scale(self.image, (20 * ZOOM_VALUE,20 * ZOOM_VALUE))
+        self.image = pygame.transform.scale(self.image, (20 * ZOOM_VALUE * scale_x,20 * ZOOM_VALUE * scale_y))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y + (CELL_SIZE // 2 + 15) * ZOOM_VALUE
@@ -480,7 +480,7 @@ class Jumper(pygame.sprite.Sprite):
         if self.rect.colliderect(player.rect):
             player.InAir = True
             player.speed = 4
-            player.vel_y = -22 * ZOOM_VALUE
+            player.vel_y = -19 * ZOOM_VALUE * scale_y
             jumper_sound.play()
             player.update_animation("Jump")
 
@@ -494,7 +494,7 @@ class Plane(pygame.sprite.Sprite):
         super().__init__()
         self.type = type
         self.image = pygame.image.load(f"assets/image/background/{self.type}_plane.png")
-        self.image = pygame.transform.scale(self.image, (80 * ZOOM_VALUE, 50 * ZOOM_VALUE))
+        self.image = pygame.transform.scale(self.image, (80 * ZOOM_VALUE * scale_x, 50 * ZOOM_VALUE * scale_y))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -531,7 +531,7 @@ class Drop(pygame.sprite.Sprite):
         self.image = drop_image
         self.x = x
         self.y = y
-        self.image = pygame.transform.scale(self.image, (50 * ZOOM_VALUE, 50 * ZOOM_VALUE))
+        self.image = pygame.transform.scale(self.image, (50 * ZOOM_VALUE * scale_x, 50 * ZOOM_VALUE * scale_y))
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
         self.vel_y = 0  # Falling speed
@@ -629,7 +629,7 @@ class Explosion(pygame.sprite.Sprite):
         self.images = []
         for i in range(0,15):
             self.image = pygame.image.load(f"assets/image/explosion/explosion-{i}.png")
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE * 2 * ZOOM_VALUE, CELL_SIZE * 2 * ZOOM_VALUE))
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE * 2 * ZOOM_VALUE , CELL_SIZE * 2 * ZOOM_VALUE ))
             self.images.append(self.image)
         self.image = self.images[self.frame_index]
         self.rect = self.image.get_rect()
@@ -831,8 +831,8 @@ def display_HUD():
     color = get_color(player.bullet_info[player.current_gun]['remaining'], player.bullet_info[player.current_gun]['mag_size'])
 
     text = font.render(f"{current_ammo}", True, color)
-    screen.blit(text, (40, 50))
-    screen.blit(bullet_icon, (15, 52))
+    screen.blit(text, (40 * scale_x, 50 * scale_y))
+    screen.blit(bullet_icon, (15 * scale_x, 52 * scale_y))
 
     if player.bullet_info[player.current_gun]['total'] > 0 :
         remaining_ammo = player.bullet_info[player.current_gun]['total'] 
@@ -841,32 +841,31 @@ def display_HUD():
         remaining_ammo = "No Ammo"
         col = (255, 0, 0) 
     text = font.render(f"{remaining_ammo}", True, col)
-    screen.blit(text, (40, 90))
-    screen.blit(remaining_bullet_icon, (10, 92))
+    screen.blit(text, (40 * scale_x, 90 * scale_y))
+    screen.blit(remaining_bullet_icon, (10 * scale_x, 92 * scale_y))
                     
     # player health
     player.health_bar.width = player.health_ratio * player.health
     
     # Text for health
-    screen.blit(heart_image, (10, 10))
+    screen.blit(heart_image, (10 * scale_x, 10 * scale_y))
     
     color = get_color(player.health, 100)
 
     pygame.draw.rect(screen,color, player.health_bar)
-    pygame.draw.rect(screen,  (50, 50, 50), player.health_bar, 2)
+    # pygame.draw.rect(screen,  (50, 50, 50), player.health_bar)
 
-    # Display Sprint Bar
     # Calculate sprint bar width based on sprint_value
-    current_width = (player.sprint_value / 200) * 100
+    current_width = (player.sprint_value / 200) * 100 * scale_x
 
     color = get_color(player.sprint_value, 200)
 
     # Draw the sprint bar (Background)
-    pygame.draw.rect(screen, (50, 50, 50), (40, 130, 100, 20))  
+    pygame.draw.rect(screen, (50, 50, 50), (40 * scale_x, 130 * scale_y, 100 * scale_x, 15 * scale_y))  
     
     # Draw sprint bar (filled part)
-    pygame.draw.rect(screen, color, (40,130, current_width, 20))
-    screen.blit(running_icon, (10, 130))
+    pygame.draw.rect(screen, color, (40 * scale_x,130 * scale_y, current_width, 15 * scale_y))
+    screen.blit(running_icon, (10 * scale_x, 130 * scale_y))
 
 
 def draw_text(text, x, y,font, color):
@@ -994,7 +993,7 @@ def main():
         # Draw the background image
         
         for i, bg_img in enumerate(scaled_bg_images):
-            screen.blit(bg_img, (i * 300 - (bg_scroll_x * 0.4) , height * CELL_SIZE // 1.46 - bg_scroll_y ))
+            screen.blit(bg_img, (i * (300 * scale_x) - (bg_scroll_x * 0.4) , height * CELL_SIZE // (1.46 * scale_y) - bg_scroll_y ))
         
         # Update and draw the player
         x, y = player.move(ground_group)
@@ -1017,7 +1016,7 @@ def main():
         for collect_item in collect_item_group:
             diff_x = abs(collect_item.x - bg_scroll_x - player_x)
             diff_y = abs(collect_item.y - bg_scroll_y - player_y)
-            if diff_x < 800 and diff_y < 600:
+            if diff_x < SCREEN_WIDTH and diff_y < SCREEN_HEIGHT:
                 collect_item.update()
                 collect_item.draw()
                 if player.rect.colliderect(collect_item.rect):
@@ -1033,7 +1032,7 @@ def main():
         for jumper in jumper_group:
             diff_x = abs(jumper.x - bg_scroll_x - player_x)
             diff_y = abs(jumper.y - bg_scroll_y - player_y)
-            if diff_x < 800 and diff_y < 600:
+            if diff_x < SCREEN_WIDTH and diff_y < SCREEN_HEIGHT:
                 jumper.update()
                 jumper.checkCollision(player)
                 jumper.draw(screen)
@@ -1041,7 +1040,7 @@ def main():
         for grass in grass_group:
             diff_x = abs(grass.x - bg_scroll_x - player_x)
             diff_y = abs(grass.y - bg_scroll_y - player_y)
-            if diff_x < 800 and diff_y < 600:
+            if diff_x < SCREEN_WIDTH and diff_y < SCREEN_HEIGHT:
                 grass.update()
                 grass.draw()
 
@@ -1057,7 +1056,7 @@ def main():
             diff_x = abs(ground.x - bg_scroll_x - player_x)
             diff_y = abs(ground.y - bg_scroll_y - player_y)
             ground.update()
-            if diff_x < 800 and diff_y < 600:
+            if diff_x < SCREEN_WIDTH and diff_y < SCREEN_HEIGHT:
                 ground.draw()
         
 
@@ -1065,7 +1064,7 @@ def main():
         for boss in boss_group:
             diff_x = abs(boss.x - bg_scroll_x - player_x)
             diff_y = abs(boss.y - bg_scroll_y - player_y)
-            if diff_x < 800 and diff_y < 600:
+            if diff_x < SCREEN_WIDTH and diff_y < SCREEN_HEIGHT:
                 boss.update()
                 boss.move(player, ground_group, bg_scroll_x, bg_scroll_y)
                 boss.draw(screen)
@@ -1096,7 +1095,7 @@ def main():
         for enemy in enemy_group:
             diff_x = abs(enemy.x - bg_scroll_x - player_x)
             diff_y = abs(enemy.y - bg_scroll_y - player_y)
-            if diff_x < 800 and diff_y < 600:
+            if diff_x < SCREEN_WIDTH and diff_y < SCREEN_HEIGHT:
                 enemy.update()
                 enemy.move(player, ground_group, bg_scroll_x, bg_scroll_y)
                 enemy.draw(screen)
@@ -1151,25 +1150,25 @@ def main():
                 # --- UI Enhancements ---
 
                 # Semi-transparent background for the dialogue box
-                dialogue_box = pygame.Surface((SCREEN_WIDTH, 150), pygame.SRCALPHA)  # Allows transparency
+                dialogue_box = pygame.Surface((SCREEN_WIDTH, 150 * scale_y), pygame.SRCALPHA)  # Allows transparency
                 dialogue_box.fill((20, 20, 20, 200))  # Dark background with 200 alpha (transparency)
-                screen.blit(dialogue_box, (0, SCREEN_HEIGHT - 150))
+                screen.blit(dialogue_box, (0, SCREEN_HEIGHT - (150 * scale_y)))
 
                 # Border for the dialogue box
-                pygame.draw.rect(screen, (255, 50, 50), (10, SCREEN_HEIGHT - 145, SCREEN_WIDTH - 20, 140), 3, border_radius=15)  
+                pygame.draw.rect(screen, (255, 50, 50), (10, SCREEN_HEIGHT - (145 * scale_x), SCREEN_WIDTH - (20 * scale_y), 140), 3, border_radius=15)  
 
                 # Display Character Image
                 if speaker == "Player":
-                    screen.blit(player_img, (10, SCREEN_HEIGHT - 130))  # Left side
+                    screen.blit(player_img, (10*scale_x, SCREEN_HEIGHT - (130 * scale_y)))  # Left side
 
                     # Display text slightly shifted for better readability
-                    draw_text(text, 100, SCREEN_HEIGHT - 110,conversation_font , color=(255, 255, 255))
+                    draw_text(text, 100 * scale_x, SCREEN_HEIGHT - (110 * scale_y),conversation_font , color=(255, 255, 255))
                 
                 else:
-                    screen.blit(enemy_img, (SCREEN_WIDTH - 140, SCREEN_HEIGHT - 130))  # Right side
+                    screen.blit(enemy_img, (SCREEN_WIDTH - (140 * scale_x), SCREEN_HEIGHT - (130 * scale_y)))  # Right side
 
                     # Align text for enemy
-                    draw_text(text, 30, SCREEN_HEIGHT - 110,conversation_font , color=(200, 200, 200))  
+                    draw_text(text, (30 * scale_x), SCREEN_HEIGHT - (110 * scale_y),conversation_font , color=(200, 200, 200))  
 
             else:
                 Conversation_Ended = True
@@ -1190,10 +1189,10 @@ def main():
         # Display FPS in the Screen
         fps = str(int(clock.get_fps()))
         fps_text = font.render(f"FPS: {fps}", True, WHITE)
-        screen.blit(fps_text, (SCREEN_WIDTH // 2, 10))
+        screen.blit(fps_text, (SCREEN_WIDTH // 2, 10 * scale_y))
         
         if player.has_key:
-            screen.blit(key_image, (720, 20))
+            screen.blit(key_image, (720 * scale_x, 20 * scale_y))
         
         if not player.alive:
             death_outro()
