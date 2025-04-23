@@ -12,7 +12,7 @@ SCREEN_WIDTH, SCREEN_HEIGHT = pygame.display.get_desktop_sizes()[0]
 
 # Scaling Factors
 scale_x = SCREEN_WIDTH / VIRTUAL_WIDTH
-scale_y = SCREEN_WIDTH / VIRTUAL_HEIGHT
+scale_y = SCREEN_HEIGHT / VIRTUAL_HEIGHT
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 

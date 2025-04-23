@@ -1,3 +1,14 @@
+"""
+====================================
+    City Gangster - Main Script
+====================================
+"""
+
+
+# ──────────────────────────────────
+# IMPORTS
+# ──────────────────────────────────
+
 import pygame
 import sys, time, cv2
 import json, random
@@ -6,7 +17,12 @@ from settings import *
 from enemy import Enemy
 import numpy as np
 
-pygame.display.set_caption("Gangster Game")
+
+# ──────────────────────────────────
+# GAME VARIABLES & OBJECTS
+# ──────────────────────────────────
+
+pygame.display.set_caption("City Gansters")
 clock = pygame.time.Clock()
 
 # GAME VARIABLES
@@ -37,170 +53,9 @@ intro_surface.fill((0, 200, 255))  # Neon Cyan
 fade_alpha = 255
 
 
-def create_map():
-    global scaled_bg_images, bg_scroll_x, bg_scroll_y, current_level, ZOOM_VALUE, height, width
-    
-    reset_sprites()
-    
-    # Load the level 1 as json file 
-    with open(f"assets/level_{current_level}.json") as file:
-        maze_layout = json.load(file)
-    
-    if current_level == 4:
-        ZOOM_VALUE = 0.5
-        player.update_size(ZOOM_VALUE)
-        for bullet in bullet_group:
-            bullet.update_size(ZOOM_VALUE)
-            
-        
-    height = len(maze_layout)
-    width = len(maze_layout[0])
-    
-    bg_scroll_x = 0
-    bg_scroll_y = 0
-
-    # Load the background image
-    
-    scaled_bg_images = []
-    for bg_img in bg_img_list:
-        scaled_bg_img = pygame.transform.scale(bg_img, (width * CELL_SIZE // 4 * ZOOM_VALUE * scale_x, height * CELL_SIZE // 3 * ZOOM_VALUE * scale_y))
-        scaled_bg_images.append(scaled_bg_img)
-
-    
-    # First create all ground tiles without any offset
-    for y, row in enumerate(maze_layout):
-        for x, cell in enumerate(row):
-            world_x = x * CELL_SIZE * ZOOM_VALUE
-            world_y = y * CELL_SIZE * ZOOM_VALUE
-            
-            if cell > 0 and cell <= 45:  # Ground
-                if cell >=5 and cell <= 8 or cell == 35:
-                    grass = Grass(world_x, world_y, cell)
-                    grass_group.add(grass)
-                else:
-                    ground = Ground(world_x, world_y, cell)
-                    ground_group.add(ground)
-
-            elif cell == 46:  # Enemy
-                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "normal")
-                enemy_group.add(enemy)
-            elif cell == 47:  # Enemy
-                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
-                enemy_group.add(enemy)
-            elif cell == 50:
-                collect_item = CollectItem(world_x, world_y, "key")
-                collect_item_group.add(collect_item)
-            elif cell == 49:
-                collect_item = CollectItem(world_x, world_y, "health")
-                collect_item_group.add(collect_item)
-            elif cell == 51:
-                collect_item = Ammo(world_x, world_y,"rifle")
-                ammo_group.add(collect_item)
-            elif cell == 54: 
-                jumper = Jumper(world_x, world_y)
-                jumper_group.add(jumper)
-            elif cell == 55:
-                exit = Exit(world_x, world_y)
-                exit_group.add(exit)
-            elif cell == 56:
-                collect_item = CollectItem(world_x, world_y,"laser")
-                collect_item_group.add(collect_item)
-            elif cell == 57:
-                collect_item = CollectItem(world_x, world_y,"smg")
-                collect_item_group.add(collect_item)
-            elif cell == 58:
-                collect_item = Ammo(world_x, world_y,"laser")
-                ammo_group.add(collect_item)
-            elif cell == 59:
-                collect_item = Ammo(world_x, world_y,"smg")
-                ammo_group.add(collect_item)
-            
-            elif cell == 60:  # Player
-                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
-            
-            elif cell == 99:
-                acid = Acid(world_x, world_y)
-                acid_group.add(acid)
-            elif cell == 100:
-                boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
-                boss_group.add(boss)
-           
-
-def show_achievement(text, duration=1000):
-    """Displays an achievement message at the top of the screen."""
-    global achievement_text, achievement_alpha, achievement_timer
-    achievement_text = text
-    achievement_alpha = 255  # Fully visible
-    achievement_timer = pygame.time.get_ticks() + duration
-
-
-def draw_achievement():
-    """Renders the achievement text with fade effect."""
-    global achievement_alpha, achievement_text
-    if achievement_text:
-        if pygame.time.get_ticks() > achievement_timer:
-            achievement_alpha -= 5  # Gradual fade-out
-            if achievement_alpha <= 0:
-                achievement_text = ""
-
-        # Render text
-        if achievement_text:
-            text_surface = font.render(achievement_text, True, NEON_BLUE)
-            text_surface.set_alpha(achievement_alpha)  # Apply fade effect
-            screen.blit(text_surface, (SCREEN_WIDTH // 2 - text_surface.get_width() // 2, 50))
-
-
-def show_Intro():
-    running = True
-    # Video settings
-    video_path = "assets/intro_1.mp4"
-    audio_path = "assets/intro.ogg"  
-    video = cv2.VideoCapture(video_path)
-
-    fps = video.get(cv2.CAP_PROP_FPS)  # Keep as float to avoid precision errors
-    frame_time = 1 / fps  # Time per frame
-    try:
-        pygame.mixer.music.load(audio_path) # Load the audio file
-        pygame.mixer.music.play()
-    except pygame.error as e:
-        print(f"Error loading audio: {e}")
-
-
-
-    # Check if video opened correctly
-    if not video.isOpened():
-        exit()
-    while running:
-        start_time = time.time()  # Track time for accurate frame display
-
-        ret, frame = video.read()
-        if not ret:
-            break  # Exit when the video ends
-
-        # Convert OpenCV frame (BGR → RGB)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # mirror the frame
-        frame = np.fliplr(frame)
-        # Convert frame to Pygame surface
-        frame_surface = pygame.surfarray.make_surface(np.rot90(frame))
-
-        # Display the frame
-        screen.blit(frame_surface, (0, 0))
-        pygame.display.update()
-
-        # Check for spacebar to skip video
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                running = False
-
-        # Ensure proper frame rate timing
-        elapsed_time = time.time() - start_time
-        sleep_time = max(0, frame_time - elapsed_time)  # Ensure we maintain the correct FPS
-        time.sleep(sleep_time)
-    pygame.mixer.music.stop()
-    video.release()
+# ──────────────────────────────────
+# GAME CLASSES
+# ──────────────────────────────────
 
 
 class Acid(pygame.sprite.Sprite):
@@ -465,10 +320,10 @@ class Jumper(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("assets/image/new_map/jumper.png")
-        self.image = pygame.transform.scale(self.image, (20 * ZOOM_VALUE * scale_x,20 * ZOOM_VALUE * scale_y))
+        self.image = pygame.transform.scale(self.image, (20 * ZOOM_VALUE * scale_y, 20 * ZOOM_VALUE * scale_x))
         self.rect = self.image.get_rect()
         self.x = x
-        self.y = y + (CELL_SIZE // 2 + 15) * ZOOM_VALUE
+        self.y = y + (CELL_SIZE // 2 + (15 * scale_y)) * ZOOM_VALUE
         self.rect.center = (self.x, self.y)
 
     def update(self):
@@ -480,7 +335,7 @@ class Jumper(pygame.sprite.Sprite):
         if self.rect.colliderect(player.rect):
             player.InAir = True
             player.speed = 4
-            player.vel_y = -19 * ZOOM_VALUE * scale_y
+            player.vel_y = -24 * ZOOM_VALUE * scale_y
             jumper_sound.play()
             player.update_animation("Jump")
 
@@ -672,6 +527,174 @@ class Explosion(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
+
+# ──────────────────────────────────
+# SUPPORTIVE FUNCTIONS
+# ──────────────────────────────────
+
+def create_map():
+    global scaled_bg_images, bg_scroll_x, bg_scroll_y, current_level, ZOOM_VALUE, height, width
+    
+    reset_sprites()
+    
+    # Load the level 1 as json file 
+    with open(f"assets/level_{current_level}.json") as file:
+        maze_layout = json.load(file)
+    
+    if current_level == 4:
+        ZOOM_VALUE = 0.5
+        player.update_size(ZOOM_VALUE)
+        for bullet in bullet_group:
+            bullet.update_size(ZOOM_VALUE)
+            
+        
+    height = len(maze_layout)
+    width = len(maze_layout[0])
+    
+    bg_scroll_x = 0
+    bg_scroll_y = 0
+
+    # Load the background image
+    
+    scaled_bg_images = []
+    for bg_img in bg_img_list:
+        scaled_bg_img = pygame.transform.scale(bg_img, (width * CELL_SIZE // 4 * ZOOM_VALUE * scale_x, height * CELL_SIZE // 3 * ZOOM_VALUE * scale_y))
+        scaled_bg_images.append(scaled_bg_img)
+
+    
+    # First create all ground tiles without any offset
+    for y, row in enumerate(maze_layout):
+        for x, cell in enumerate(row):
+            world_x = x * CELL_SIZE * ZOOM_VALUE
+            world_y = y * CELL_SIZE * ZOOM_VALUE
+            
+            if cell > 0 and cell <= 45:  # Ground
+                if cell >=5 and cell <= 8 or cell == 35:
+                    grass = Grass(world_x, world_y, cell)
+                    grass_group.add(grass)
+                else:
+                    ground = Ground(world_x, world_y, cell)
+                    ground_group.add(ground)
+
+            elif cell == 46:  # Enemy
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "normal")
+                enemy_group.add(enemy)
+            elif cell == 47:  # Enemy
+                enemy = Enemy(world_x, world_y - CELL_SIZE // 2, "strong")
+                enemy_group.add(enemy)
+            elif cell == 50:
+                collect_item = CollectItem(world_x, world_y, "key")
+                collect_item_group.add(collect_item)
+            elif cell == 49:
+                collect_item = CollectItem(world_x, world_y, "health")
+                collect_item_group.add(collect_item)
+            elif cell == 51:
+                collect_item = Ammo(world_x, world_y,"rifle")
+                ammo_group.add(collect_item)
+            elif cell == 54: 
+                jumper = Jumper(world_x, world_y)
+                jumper_group.add(jumper)
+            elif cell == 55:
+                exit = Exit(world_x, world_y)
+                exit_group.add(exit)
+            elif cell == 56:
+                collect_item = CollectItem(world_x, world_y,"laser")
+                collect_item_group.add(collect_item)
+            elif cell == 57:
+                collect_item = CollectItem(world_x, world_y,"smg")
+                collect_item_group.add(collect_item)
+            elif cell == 58:
+                collect_item = Ammo(world_x, world_y,"laser")
+                ammo_group.add(collect_item)
+            elif cell == 59:
+                collect_item = Ammo(world_x, world_y,"smg")
+                ammo_group.add(collect_item)
+            
+            elif cell == 60:  # Player
+                player.rect.midbottom = (world_x + CELL_SIZE // 2, world_y)  # Center player horizontally
+            
+            elif cell == 99:
+                acid = Acid(world_x, world_y)
+                acid_group.add(acid)
+            elif cell == 100:
+                boss = Enemy(world_x, world_y - CELL_SIZE // 2, "boss")
+                boss_group.add(boss)
+           
+
+def show_achievement(text, duration=1000):
+    """Displays an achievement message at the top of the screen."""
+    global achievement_text, achievement_alpha, achievement_timer
+    achievement_text = text
+    achievement_alpha = 255  # Fully visible
+    achievement_timer = pygame.time.get_ticks() + duration
+
+
+def draw_achievement():
+    """Renders the achievement text with fade effect."""
+    global achievement_alpha, achievement_text
+    if achievement_text:
+        if pygame.time.get_ticks() > achievement_timer:
+            achievement_alpha -= 5  # Gradual fade-out
+            if achievement_alpha <= 0:
+                achievement_text = ""
+
+        # Render text
+        if achievement_text:
+            text_surface = font.render(achievement_text, True, NEON_BLUE)
+            text_surface.set_alpha(achievement_alpha)  # Apply fade effect
+            screen.blit(text_surface, (SCREEN_WIDTH // 2 - text_surface.get_width() // 2, 50))
+
+
+def show_Intro():
+    running = True
+
+    video_path = "assets/intro_1.mp4"
+    audio_path = "assets/intro.ogg"
+    video = cv2.VideoCapture(video_path)
+
+    fps = video.get(cv2.CAP_PROP_FPS)
+    frame_time = 1 / fps
+
+    try:
+        pygame.mixer.music.load(audio_path)
+        pygame.mixer.music.play()
+    except pygame.error as e:
+        print(f"Error loading audio: {e}")
+
+    if not video.isOpened():
+        exit()
+
+    while running:
+        start_time = time.time()
+
+        ret, frame = video.read()
+        if not ret:
+            break
+
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = np.fliplr(frame)
+        frame_surface = pygame.surfarray.make_surface(np.rot90(frame))
+
+        # ✨ Scale to fit screen
+        scaled_width = int(VIRTUAL_WIDTH * scale_x)
+        scaled_height = int(VIRTUAL_HEIGHT * scale_y)
+        frame_surface = pygame.transform.smoothscale(frame_surface, (scaled_width, scaled_height))
+
+        screen.blit(frame_surface, (0, 0))
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                running = False
+
+        elapsed_time = time.time() - start_time
+        sleep_time = max(0, frame_time - elapsed_time)
+        time.sleep(sleep_time)
+
+    pygame.mixer.music.stop()
+    video.release()
 
 
 def DisplayLevel():

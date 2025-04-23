@@ -108,7 +108,7 @@ class Player(pygame.sprite.Sprite):
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
-            self.vel_y = -12 * self.zoom_value * scale_y 
+            self.vel_y = -14 * self.zoom_value * scale_y 
             new_action = "Jump"
 
 
