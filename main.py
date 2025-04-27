@@ -27,7 +27,7 @@ conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 
 # TRACKING LOCAL VARIABLES
-current_level = 0
+current_level = 3
 isDeathSoundPlay = False
 
 # Create a surface for the fade out
@@ -1248,4 +1248,5 @@ def main():
 
 if __name__ == "__main__":
     show_Intro()
-    main()
+    # main()
+    game_end()
