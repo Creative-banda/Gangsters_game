@@ -18,7 +18,7 @@ class Player(pygame.sprite.Sprite):
         self.last_update_time = pygame.time.get_ticks()
         self.InAir = True
         self.vel_y = 0
-        self.speed = 2 * self.zoom_value
+        self.speed = 2 * self.zoom_value * scale_x
         self.isReloading = False
         self.last_bullet_time = pygame.time.get_ticks()
         self.isShooting = False
@@ -44,16 +44,15 @@ class Player(pygame.sprite.Sprite):
             self.image = self.animations[self.current_action][len(self.animations[self.current_action])-1]
 
         self.rect = self.image.get_rect()
-        self.rect.midbottom = (0, 600)  # Changed from center to midbottom
-        self.screen_height = 600  
-        self.target_y = self.screen_height - 100   # Position player near bottom
+        self.screen_height = SCREEN_HEIGHT  
+        self.target_y = self.screen_height - (100 * scale_y)   # Position player near bottom
         
         # Create a health bar in the top of the player as health bar
         self.max_health = 200
         self.health_bar_length = 100
         self.health_ratio = self.max_health / self.health_bar_length
         # creating a rect for health bar
-        self.health_bar = pygame.Rect(40, 10, self.health_bar_length, 20)
+        self.health_bar = pygame.Rect(40 * scale_x, 10 * scale_y, self.health_bar_length, 20)
         self.has_key = False
     
     def load_animations(self):
@@ -102,14 +101,14 @@ class Player(pygame.sprite.Sprite):
         
     
         if self.InAir:
-            self.speed = 4
+            self.speed = 4 * scale_x * self.zoom_value
         else:
-            self.speed = 2
+            self.speed = 2 * scale_x * self.zoom_value
 
         # Handle Jumping
         if keys[pygame.K_w] and not self.InAir and not self.isReloading and not self.isShooting and self.alive:
             self.InAir = True
-            self.vel_y = -14 * self.zoom_value
+            self.vel_y = -14 * self.zoom_value * scale_y 
             new_action = "Jump"
 
 
@@ -169,7 +168,7 @@ class Player(pygame.sprite.Sprite):
             self.update_animation(new_action)
 
         # Apply gravity
-        self.vel_y += 0.5 * self.zoom_value
+        self.vel_y += 0.5 * self.zoom_value * scale_y
         dy = self.vel_y
         
         
@@ -356,7 +355,7 @@ class Bullet(pygame.sprite.Sprite):
         for enemy in enemy_group:
             diff_x = abs(enemy.x - bg_scroll_x - player.rect.x)
             diff_y = abs(enemy.y - bg_scroll_y - player.rect.y)
-            if diff_x < 800 and diff_y < 600:
+            if diff_x < SCREEN_WIDTH and diff_y < SCREEN_HEIGHT:
                 if self.rect.colliderect(enemy.rect) and enemy.health > 0:
                     self.kill()
                     enemy.take_damage(self.damage)

@@ -5,19 +5,26 @@ pygame.mixer.init()
 
 
 
-SCREEN_WIDTH,SCREEN_HEIGHT = 800,600
+VIRTUAL_WIDTH,VIRTUAL_HEIGHT = 800,600
+
+SCREEN_WIDTH, SCREEN_HEIGHT = pygame.display.get_desktop_sizes()[0]
+
+
+# Scaling Factors
+scale_x = SCREEN_WIDTH / VIRTUAL_WIDTH
+scale_y = SCREEN_HEIGHT / VIRTUAL_HEIGHT
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Constants
-BULLET_SIZE = (10, 5)
-BULLET_SPEED = 20
-PLAYER_SIZE = (70, 80)  # Target size for each frame
-SCREEN_THRUST_X = SCREEN_HEIGHT - 200
-SCREEN_THRUST_Y = SCREEN_HEIGHT // 2
-CELL_SIZE = 70
+BULLET_SIZE = (10 * scale_x, 5 * scale_y)
+BULLET_SPEED = 20 * scale_x
+PLAYER_SIZE = (70 * scale_x, 80 * scale_x)  # Target size for each frame
+SCREEN_THRUST_X = SCREEN_HEIGHT - (200 * scale_x)
+SCREEN_THRUST_Y = SCREEN_HEIGHT // (2 * scale_y)
+CELL_SIZE = 70 * scale_x   
 FPS = 60
-ZOOM_VALUE = 1
+ZOOM_VALUE = 1 
 
 
 
@@ -31,12 +38,15 @@ NEON_CYAN = (0, 255, 255)
 NEON_PINK = (255, 105, 180)
 NEON_YELLOW = (255, 255, 0)
 
-# Achievement variables
-achievement_text = ""
-achievement_alpha = 0  # Transparency (0 = invisible, 255 = fully visible)
-achievement_timer = 0
 
 
+# FONTS
+font = pygame.font.Font('assets/font/Pricedown.otf', 25)
+big_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 50)
+
+level_font = pygame.font.Font("assets/font/Bronx_Bystreets.ttf", 80)  # Use a tech/street font
+start_font = pygame.font.Font("assets/font/Pricedown.otf", 32)
+conversation_font = pygame.font.Font("assets/font/Lunar_Escape.otf", 18)
 
 # All Sprite
 bullet_group = pygame.sprite.Group()
@@ -66,19 +76,19 @@ for i in range(2,6):
 heart_image = pygame.image.load("assets/icons/heart.png").convert_alpha()
 bullet_icon = pygame.image.load("assets/icons/bullet.png").convert_alpha()
 remaining_bullet_icon = pygame.image.load("assets/icons/remaining_bullet.png").convert_alpha()
-remaining_bullet_icon = pygame.transform.scale(remaining_bullet_icon, (25,25))
+remaining_bullet_icon = pygame.transform.scale(remaining_bullet_icon, (25 * scale_x,25 * scale_x))
 running_icon = pygame.image.load("assets/icons/running.png").convert_alpha()
-running_icon = pygame.transform.scale(running_icon, (25,25))
+running_icon = pygame.transform.scale(running_icon, (25 * scale_x,25 * scale_y))
 key_image = pygame.image.load("assets/image/collect_item/key.png").convert_alpha()
-key_image = pygame.transform.scale(key_image, (45,35))
+key_image = pygame.transform.scale(key_image, (45 * scale_x,35 * scale_y))
 drop_image = pygame.image.load("assets/image/background/drop.png").convert_alpha()
 
 # Conversation Images
 player_img = pygame.image.load("assets/conversation/player.png").convert_alpha()
-player_img = pygame.transform.scale(player_img, (100, 150))
+player_img = pygame.transform.scale(player_img, (100 * scale_x, 150 * scale_y))
 
 enemy_img = pygame.image.load("assets/conversation/enemy.png").convert_alpha()
-enemy_img = pygame.transform.scale(enemy_img, (150, 150))
+enemy_img = pygame.transform.scale(enemy_img, (150 * scale_x, 150 * scale_x))
 
 # Grunge texture overlay
 
@@ -86,7 +96,7 @@ grunge = pygame.image.load("assets/image/background/bg_image.png").convert_alpha
 grunge = pygame.transform.scale(grunge, (SCREEN_WIDTH * ZOOM_VALUE, SCREEN_HEIGHT * ZOOM_VALUE))
 
 bomb_image = pygame.image.load("assets/image/background/bomb.png").convert_alpha()
-bomb_image = pygame.transform.scale(bomb_image, (20 * ZOOM_VALUE, 30 * ZOOM_VALUE))
+bomb_image = pygame.transform.scale(bomb_image, (20 * ZOOM_VALUE * scale_x, 30 * ZOOM_VALUE * scale_y))
 
 
 # sound effects
@@ -108,47 +118,14 @@ explosion_sound = pygame.mixer.Sound("assets/sfx/explosion_sound.mp3")
 
 # Define animations with frame counts, sprite sheet paths and animation cooldowns
 PLAYER_ANIMATION = {
-"idle": {
-    "frame_count": 6,  # Number of frames
-    "image_path": "assets/image/player/Idle.png",  # Sprite sheet path,
-    "animation_cooldown": 70
-},
-"Run": {
-    "frame_count": 10,  # Number of frames
-    "image_path": "assets/image/player/Run.png",  # Sprite sheet path
-    "animation_cooldown": 70
-},
-"Shot": {
-    "frame_count": 4,  # Number of frames
-    "image_path": "assets/image/player/Shot.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Walk": {
-    "frame_count": 10,  # Number of frames
-    "image_path": "assets/image/player/Walk.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Jump": {
-    "frame_count": 10,  # Number of frames
-    "image_path": "assets/image/player/Jump.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-
-"Reload": {
-    "frame_count": 17,  # Number of frames
-    "image_path": "assets/image/player/Recharge.png",  # Sprite sheet path
-    "animation_cooldown": 70
-},
-"Hurt": {
-    "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/player/Hurt.png",  # Sprite sheet path
-    "animation_cooldown": 100
-},
-"Dead": {
-    "frame_count": 5,  # Number of frames
-    "image_path": "assets/image/player/Dead.png",  # Sprite sheet path
-    "animation_cooldown": 150
-},
+    "idle": {"frame_count": 6, "image_path": "assets/image/player/Idle.png", "animation_cooldown": 70},
+    "Run": {"frame_count": 10, "image_path": "assets/image/player/Run.png", "animation_cooldown": 70},
+    "Shot": {"frame_count": 4, "image_path": "assets/image/player/Shot.png", "animation_cooldown": 100},
+    "Walk": {"frame_count": 10, "image_path": "assets/image/player/Walk.png", "animation_cooldown": 100},
+    "Jump": {"frame_count": 10, "image_path": "assets/image/player/Jump.png", "animation_cooldown": 100},
+    "Reload": {"frame_count": 17, "image_path": "assets/image/player/Recharge.png", "animation_cooldown": 70},
+    "Hurt": {"frame_count": 5, "image_path": "assets/image/player/Hurt.png", "animation_cooldown": 100},
+    "Dead": {"frame_count": 5, "image_path": "assets/image/player/Dead.png", "animation_cooldown": 150},
 }
 
 ENEMIES = {
@@ -182,25 +159,7 @@ ENEMIES = {
 # Player Gun Info
 
 BULLET_INFO = {
-"rifle": {
-    "total": 30,
-    "remaining": 20,
-    "mag_size": 20,
-    "bullet_speed": 20,
-    "cooldown" : 100
-},
-"laser": {
-    "total": 30,
-    "remaining": 20,
-    "mag_size": 20,
-    "bullet_speed": 20,
-    "cooldown" : 200
-},
-"smg": {
-    "total": 100,
-    "remaining": 30,
-    "mag_size": 30,
-    "bullet_speed": 20,
-    "cooldown" : 5
-}
+"rifle": { "total": 30, "remaining": 20, "mag_size": 20, "bullet_speed": 20, "cooldown" : 100 },
+"laser": { "total": 30, "remaining": 20, "mag_size": 20, "bullet_speed": 20, "cooldown" : 200 },
+"smg": { "total": 100, "remaining": 30, "mag_size": 30, "bullet_speed": 20, "cooldown" : 5 }
 }
