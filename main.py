@@ -39,7 +39,7 @@ achievement_timer = 0
 
 
 # TRACKING LOCAL VARIABLES
-current_level = 0
+current_level = 3
 isDeathSoundPlay = False
 
 # Create a surface for the fade out
@@ -418,7 +418,8 @@ class Drop(pygame.sprite.Sprite):
         random_item = random.choice([
             ("health", "health"),
             ("rifle_ammo", "rifle"),
-            ("smg_ammo", "smg")
+            ("smg_ammo", "smg"),
+            ("laser_ammo", "laser")
         ])
 
 
