@@ -39,7 +39,7 @@ achievement_timer = 0
 
 
 # TRACKING LOCAL VARIABLES
-current_level = 3
+current_level = 0
 isDeathSoundPlay = False
 
 # Create a surface for the fade out
