@@ -1166,7 +1166,7 @@ def main():
             player.isActive = False
             player.update_animation("idle")
             
-            # Display Conversation
+                       # Display Conversation
             if current_line < len(current_conversation):
                 speaker, text = current_conversation[current_line]
 
@@ -1178,14 +1178,14 @@ def main():
                 screen.blit(dialogue_box, (0, SCREEN_HEIGHT - (150 * scale_y)))
 
                 # Border for the dialogue box
-                pygame.draw.rect(screen, (255, 50, 50), (10, SCREEN_HEIGHT - (145 * scale_x), SCREEN_WIDTH - (20 * scale_y), 140), 3, border_radius=15)  
+                pygame.draw.rect(screen, (255, 50, 50), (10 * scale_x, SCREEN_HEIGHT - (145 * scale_y), SCREEN_WIDTH - (20 * scale_x), 140 * scale_y), 3, border_radius=15)  
 
                 # Display Character Image
                 if speaker == "Player":
                     screen.blit(player_img, (10*scale_x, SCREEN_HEIGHT - (130 * scale_y)))  # Left side
 
                     # Display text slightly shifted for better readability
-                    draw_text(text, 100 * scale_x, SCREEN_HEIGHT - (110 * scale_y),conversation_font , color=(255, 255, 255))
+                    draw_text(text, 100 * scale_x, SCREEN_HEIGHT - (110 * scale_y), conversation_font, color=(255, 255, 255))
                 
                 else:
                     screen.blit(enemy_img, (SCREEN_WIDTH - (140 * scale_x), SCREEN_HEIGHT - (130 * scale_y)))  # Right side
@@ -1259,5 +1259,4 @@ def main():
 
 if __name__ == "__main__":
     show_Intro()
-    # main()
-    game_end()
+    main()
