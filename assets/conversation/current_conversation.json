@@ -1,0 +1,23 @@
+[
+    ["Player", "What the hell... who are you?"],
+    ["Enemy", "Someone who's been watching you for a long time."],
+    ["Player", "Stay back!"],
+    ["Enemy", "Interesting. Most people run when they see me. "],
+    ["Enemy", "But you... you're different."],
+    ["Player", "Yeah, well, I've dealt with my share of thugs."],
+    ["Enemy", "Thugs? Oh, you poor soul. You have no idea what you're facing."],
+    ["Player", "Maybe not. But I'm still standing."],
+    ["Enemy", "For now. I can hear your heartbeat racing."],
+    ["Enemy", "Smell the adrenaline in your blood."],
+    ["Player", "You're not human, are you?"],
+    ["Enemy", "Human? I've evolved beyond such... limitations."],
+    ["Enemy", "I am the future walking. And you?"],
+    ["Enemy", " You're just another relic to be... retired."],
+    ["Player", "I've taken down plenty of 'futures' before."],
+    ["Enemy", "Have you? That scar on your neck suggests otherwise."],
+    ["Enemy", "You survived our last encounter by pure luck."],
+    ["Enemy", "Tonight, luck's not on the menu."],
+    ["Player", "Wait... that was you? The attack at the marina?"],
+    ["Enemy", "Just the first of many gifts I've left you."],
+    ["Enemy", " Consider them... practice rounds."]
+]

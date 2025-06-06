@@ -845,7 +845,6 @@ def get_color(current_value, max_value):
         color = (255, 0, 0)  # Red
     return color
 
-
 def display_HUD():
 
     current_ammo = player.bullet_info[player.current_gun]['remaining'] if player.bullet_info[player.current_gun]['remaining'] > 0 else "No Ammo"
@@ -895,67 +894,21 @@ def draw_text(text, x, y,font, color):
     text_surface = font.render(text, True, color)
     screen.blit(text_surface, (x, y))
 
-
 player = Player()
 
-
 def reset_sprites():
-    # Reset Sprite Groups
-    bullet_group.empty()
-    ground_group.empty()
-    enemy_group.empty()
-    collect_item_group.empty()
-    jumper_group.empty()
-    exit_group.empty()
-    grass_group.empty()
-    acid_group.empty()
-    boss_group.empty()
-    drop_group.empty()
-    ammo_group.empty()
-    plane_group.empty()
-
+    ALL_GROUPS = [ bullet_group, ground_group, enemy_group, collect_item_group,
+                jumper_group, exit_group, grass_group, acid_group, boss_group, drop_group, ammo_group, plane_group ]
+    for group in ALL_GROUPS:
+        group.empty()
 
 def main():
     global bg_scroll_x, bg_scroll_y, isDeathSoundPlay, fade_alpha, player, current_level
     
-    current_conversation = [
-        ("Player", "What the hell... who are you?"),
-        ("Enemy", "Someone who's been watching you for a long time."),
-        ("Player", "Stay back!"),
-        ("Enemy", "Interesting. Most people run when they see me. "),
-        ("Enemy", "But you... you're different."),
-        ("Player", "Yeah, well, I've dealt with my share of thugs."),
-        ("Enemy", "Thugs? Oh, you poor soul. You have no idea what you're facing."),
-        ("Player", "Maybe not. But I'm still standing."),
-        ("Enemy", "For now. I can hear your heartbeat racing."),
-        ("Enemy", "Smell the adrenaline in your blood."),
-        ("Player", "You're not human, are you?"),
-        ("Enemy", "Human? I've evolved beyond such... limitations."),
-        ("Enemy", "I am the future walking. And you?"),
-        ("Enemy", " You're just another relic to be... retired."),
-        ("Player", "I've taken down plenty of 'futures' before."),
-        ("Enemy", "Have you? That scar on your neck suggests otherwise."),
-        ("Enemy", "You survived our last encounter by pure luck."),
-        ("Enemy", "Tonight, luck's not on the menu."),
-        ("Player", "Wait... that was you? The attack at the marina?"),
-        ("Enemy", "Just the first of many gifts I've left you."),
-        ("Enemy", " Consider them... practice rounds.")
-    ]
+    current_conversation = json.loads(open("assets/conversation/current_conversation.json").read())
+    mid_conversation = json.loads(open("assets/conversation/mid_conversation.json").read())
+    end_conversation = json.loads(open("assets/conversation/end_conversation.json").read())
 
-    mid_conversation = [
-        ("Enemy", "You're fighting well... for obsolete hardware."),
-        ("Player", "And you're bleeding well... for a 'superior being'."),
-        ("Enemy", "Merely an inconvenience. Unlike your... condition.")
-    ]
-
-    end_conversation = [
-        ("Enemy", "This... isn't... possible..."),
-        ("Player", "Next time, try evolving a backup plan."),
-        ("Enemy", "They'll... send... more..."),
-        ("Player", "Tell them I'll come for them"),
-    ]
-
-    
     DisplayLevel()
     # play background music
     bg_music.play(-1)
@@ -1045,7 +998,6 @@ def main():
                 if player.rect.colliderect(collect_item.rect):
                     collect_item.collect()
                     
-
         for acid in acid_group:
             acid.update()
             acid.draw()            
@@ -1255,7 +1207,6 @@ def main():
         # Update the display
         pygame.display.flip()
         clock.tick(FPS)
-
 
 if __name__ == "__main__":
     show_Intro()
