@@ -73,6 +73,7 @@ settings.py      # Game settings and constants
 
 ## 🎮 Controls
 - **W, A, S, D**: Movement
+- - **L_Shift**: Sprint
 - **Space**: Shoot
 - **1, 2, 3**: Switch Between Different Guns
 - **R**: Reload
